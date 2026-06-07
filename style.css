@@ -116,13 +116,13 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;               /* Уменьшили расстояние между кнопками и логотипом */
+  gap: 0px;               /* Уменьшили расстояние между кнопками и логотипом */
   
   background: rgba(245, 239, 227, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1.5px solid rgba(122,92,56,.20);
-  border-radius: 12px;
+  border-radius: 200px;
   
   /* Уменьшаем отступы: сверху/снизу 8px, слева/справа 12px */
   padding: 8px 12px;        
