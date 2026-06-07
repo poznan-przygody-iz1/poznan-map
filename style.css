@@ -440,3 +440,19 @@ html, body {
   padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+
+/* ── СТИЛИЗАЦИЯ САМОЙ КАРТЫ (ВИНТАЖ) ─────────────────────── */
+.leaflet-tile {
+  /* Добавляем эффект старой бумаги: сепия, контраст и легкий сдвиг цвета */
+  filter: sepia(45%) contrast(115%) brightness(95%) hue-rotate(-5deg);
+}
+
+/* Эффект виньетки (затемнение по краям экрана) */
+#map::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 500; /* Находится поверх карты, но под маркерами и меню */
+  pointer-events: none; /* Позволяет кликать "сквозь" тень */
+  box-shadow: inset 0 0 150px rgba(26, 17, 8, 0.6); /* Цвет var(--clr-ink) с прозрачностью */
+}
