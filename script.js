@@ -353,8 +353,9 @@ function initSearch(locations) {
           sidebar.classList.remove('is-open');
 
           // 2. Убеждаемся, что маркер не скрыт фильтром (показываем всё)
-          filterMap('all');
-          document.querySelector('[data-cat="all"]').classList.add('is-active');
+          filterMap('all');
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('is-active')); // Выключаем все
+          document.querySelector('[data-cat="all"]').classList.add('is-active'); // Включаем нужную
 
           // 3. Кинематографично летим к точке!
           map.flyTo([loc.lat, loc.lng], 16, { animate: true, duration: 1.5 });
