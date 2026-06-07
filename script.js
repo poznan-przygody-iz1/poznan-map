@@ -1,13 +1,11 @@
 /* ═══════════════════════════════════════════════════════
-   Poznań — Miasto Przygód  |  script.js
+   Poznań — Miasto Przygód  |  script.js (Geographic Map)
    ═══════════════════════════════════════════════════════ */
 
 'use strict';
 
 /* ── CONFIG ─────────────────────────────────────────────── */
-const MAP_IMAGE_URL   = 'Gemini_Generated_Image_x9xd3px9xd3px9xd.png';
-const MAP_BOUNDS      = [[0, 0], [1000, 1500]];
-const DATA_URL        = 'data.json';
+const DATA_URL = 'data.json?v=' + Date.now();
 
 /* ── CATEGORY COLOUR MAP ─────────────────────────────────── */
 const CATEGORY_COLORS = {
@@ -49,27 +47,25 @@ function createPinSVG(color = '#c8813a') {
 }
 
 /* ── MAP INIT ────────────────────────────────────────────── */
+// Инициализация реальной карты с центром в Познани
 const map = L.map('map', {
-  crs:              L.CRS.Simple,
-  minZoom:         -1.5,
-  maxZoom:          3,
-  zoom:             0,
-  center:           [500, 750],
-  maxBounds:        [[-150, -200], [1150, 1700]],
-  maxBoundsViscosity: 0.85,
-  zoomControl:      true,
+  center:           [52.4064, 16.9252],
+  zoom:             14,
+  minZoom:          12,
+  maxZoom:          18,
+  zoomControl:      false,
   attributionControl: true,
 });
 
-/* Position zoom control bottom-right */
-map.zoomControl.setPosition('bottomright');
+/* Контрол зума перемещен в правый нижний угол */
+L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-/* Image overlay */
-const imageOverlay = L.imageOverlay(MAP_IMAGE_URL, MAP_BOUNDS, {
-  attribution: '© Poznań — Miasto Przygód',
+/* Подключение стилизованных слоев CartoDB Voyager */
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 20
 }).addTo(map);
-
-map.fitBounds(MAP_BOUNDS, { padding: [20, 20] });
 
 /* ── STATE ───────────────────────────────────────────────── */
 let swiperInstance = null;
@@ -106,13 +102,10 @@ async function loadData() {
 /* ── MARKERS ─────────────────────────────────────────────── */
 function renderMarkers(locations) {
   locations.forEach(loc => {
-    const color = getCategoryColor(loc.category);
+    // Если точка не содержит гео-координат, пропускаем её, чтобы не сломать скрипт
+    if (typeof loc.lat === 'undefined' || typeof loc.lng === 'undefined') return;
 
-    /* Leaflet coordinate system for imageOverlay:
-       image pixel (x, y) → L.latLng(y_inverted, x)
-       Since bounds are [[0,0],[1000,1500]], lat = y from top (1000-y), lng = x */
-    const lat = 1000 - loc.y;
-    const lng = loc.x;
+    const color = getCategoryColor(loc.category);
 
     const icon = L.divIcon({
       html: `<div class="custom-pin" role="button" tabindex="0" aria-label="${loc.title}">${createPinSVG(color)}</div>`,
@@ -121,7 +114,7 @@ function renderMarkers(locations) {
       className:  '',
     });
 
-    const marker = L.marker([lat, lng], { icon, title: loc.title })
+    const marker = L.marker([loc.lat, loc.lng], { icon, title: loc.title })
       .addTo(map)
       .bindTooltip(loc.title, {
         permanent: false,
@@ -155,7 +148,7 @@ function openModal(loc) {
   titleEl.textContent       = loc.title;
   categoryEl.textContent    = loc.category;
   descEl.textContent        = loc.description;
-  coordsEl.textContent      = `POZ ${loc.x.toString().padStart(4,'0')} · ${loc.y.toString().padStart(4,'0')}`;
+  coordsEl.textContent      = `${loc.lat.toFixed(4)}° N · ${loc.lng.toFixed(4)}° E`;
 
   /* Category accent color */
   const color = getCategoryColor(loc.category);
@@ -266,8 +259,7 @@ function showDataError() {
       <h2 style="font-size:22px;margin-bottom:10px;">Błąd ładowania danych</h2>
       <p style="font-size:14px;color:rgba(245,239,227,.6);max-width:320px;margin:0 auto;">
         Upewnij się, że plik <code>data.json</code> znajduje się obok pliku
-        <code>index.html</code> i że strona jest serwowana przez lokalny serwer
-        (np. <code>npx serve .</code>).
+        <code>index.html</code> i że strona jest serwowana przez lokalny serwer.
       </p>
     </div>
   `;
