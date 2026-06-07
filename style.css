@@ -696,22 +696,27 @@ html, body {
 }
 .filter-btn.is-active .filter-name { color: var(--clr-cream); }
 
-/* Фиксируем кнопки в модальном окне, чтобы они не съезжали и стояли близко */
-.modal-content div[style*="display: flex"] {
-  display: flex !important;
-  flex-direction: column !important; /* Кнопки друг под другом */
-  width: 100% !important;
-  gap: 10px !important;     /* Минимальный отступ между самими кнопками */
-  margin-top: 5px !important; /* Уменьшаем расстояние от текста до кнопок */
-}
+/* ── ПОЛНАЯ ФИКСАЦИЯ КНОПОК В МОДАЛКЕ ────────────────────── */
 
-.modal-content div[style*="display: flex"] a {
+/* Находим ссылки на PDF и Карты внутри контента модалки */
+.modal-content a[href*="pdf"], 
+.modal-content a[href*="maps"] {
   display: block !important;
-  text-align: center !important; 
   width: 100% !important;
+  max-width: 100% !important;
+  text-align: center !important;
+  
+  /* Сбрасываем старые внешние отступы и обнуляем их */
+  margin: 0 0 10px 0 !important; 
+  transform: none !important;
 }
 
-/* Убираем лишний гигантский отступ у самого текста */
+/* Последней кнопке убираем нижний отступ */
+.modal-content a[href*="maps"] {
+  margin-bottom: 0 !important;
+}
+
+/* Убираем гигантский отступ у самого текста описания */
 .modal-content p {
-  margin-bottom: 10px !important; 
+  margin-bottom: 12px !important; 
 }
