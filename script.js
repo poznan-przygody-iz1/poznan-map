@@ -234,31 +234,43 @@ function openModal(loc) {
   categoryEl.textContent = loc.category;
 
   /* Описание + Твои крутые кнопки PDF и маршрута */
-  descEl.innerHTML = `
-    <p style="margin-bottom: 20px; line-height: 1.5;">${loc.description}</p>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
-      ${loc.pdf ? `
-        <a href="${loc.pdf}" target="_blank" style="
-          display: inline-block; background-color: #53694f; color: #f5efe3;
-          padding: 10px 18px; text-decoration: none; font-family: 'Playfair Display', serif;
-          font-weight: bold; font-size: 0.95rem; border-radius: 6px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;
-        " onmouseover="this.style.backgroundColor='#3e523b'; this.style.transform='translateY(-2px)';" 
-           onmouseout="this.style.backgroundColor='#53694f'; this.style.transform='translateY(0)';">
-        📖 Przewodnik (PDF)
-        </a>
-      ` : ''}
-      <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="
-        display: inline-block; background-color: #2980b9; color: #f5efe3;
-        padding: 10px 18px; text-decoration: none; font-family: 'Playfair Display', serif;
-        font-weight: bold; font-size: 0.95rem; border-radius: 6px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;
-      " onmouseover="this.style.backgroundColor='#1c6ea4'; this.style.transform='translateY(-2px)';" 
-         onmouseout="this.style.backgroundColor='#2980b9'; this.style.transform='translateY(0)';">
-        🗺️ Jak dojechać?
-      </a>
-    </div>
-  `;
+  descEl.innerHTML = `
+    <p style="margin-bottom: 20px; line-height: 1.6; color: #333;">${loc.description}</p>
+    
+    <div style="
+      display: flex; 
+      gap: 12px; 
+      margin-top: 25px; 
+      padding-top: 20px; 
+      border-top: 1px solid rgba(122, 92, 56, 0.15); 
+      justify-content: stretch;
+      flex-wrap: wrap;
+    ">
+      ${loc.pdf ? `
+        <a href="${loc.pdf}" target="_blank" style="
+          flex: 1; min-width: 140px; text-align: center; 
+          background-color: #53694f; color: #f5efe3;
+          padding: 12px 16px; text-decoration: none; font-family: 'Playfair Display', serif;
+          font-weight: bold; font-size: 0.95rem; border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(83, 105, 79, 0.2); transition: all 0.25s ease;
+        " onmouseover="this.style.backgroundColor='#3e523b'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(83, 105, 79, 0.3)';" 
+           onmouseout="this.style.backgroundColor='#53694f'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(83, 105, 79, 0.2)';">
+          📖 Przewodnik (PDF)
+        </a>
+      ` : ''}
+      
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="
+        flex: 1; min-width: 140px; text-align: center; 
+        background-color: #2980b9; color: #f5efe3;
+        padding: 12px 16px; text-decoration: none; font-family: 'Playfair Display', serif;
+        font-weight: bold; font-size: 0.95rem; border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(41, 128, 185, 0.2); transition: all 0.25s ease;
+      " onmouseover="this.style.backgroundColor='#1c6ea4'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(41, 128, 185, 0.3)';" 
+         onmouseout="this.style.backgroundColor='#2980b9'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(41, 128, 185, 0.2)';">
+        🗺️ Jak dojechać?
+      </a>
+    </div>
+  `;
 
   const color = getCategoryColor(loc.category);
   categoryEl.style.color       = color;
