@@ -186,33 +186,35 @@ if(menuToggle && sidebarClose) {
 }
 
 function renderSidebarFilters(locations) {
-  if(!sidebarCategories) return;
-  const categories = [...new Set(locations.map(l => l.category))].sort();
+  if(!sidebarCategories) return;
+  const categories = [...new Set(locations.map(l => l.category))].sort();
 
-  let html = `<button class="filter-btn is-active" data-cat="all">
-                <span class="filter-color-dot" style="background: #999"></span>
-                Wszystkie miejsca
-              </button>`;
+  // Обернули текст в <span class="filter-name">
+  let html = `<button class="filter-btn is-active" data-cat="all">
+                <span class="filter-color-dot" style="background: #999"></span>
+                <span class="filter-name">Wszystkie miejsca</span>
+              </button>`;
 
-  categories.forEach(cat => {
-    const color = getCategoryColor(cat);
-    html += `<button class="filter-btn" data-cat="${cat}">
-               <span class="filter-color-dot" style="background: ${color}"></span>
-               ${cat}
-             </button>`;
-  });
+  categories.forEach(cat => {
+    const color = getCategoryColor(cat);
+    // И здесь тоже обернули текст
+    html += `<button class="filter-btn" data-cat="${cat}">
+               <span class="filter-color-dot" style="background: ${color}"></span>
+               <span class="filter-name">${cat}</span>
+             </button>`;
+  });
 
-  sidebarCategories.innerHTML = html;
+  sidebarCategories.innerHTML = html;
 
-  const filterBtns = sidebarCategories.querySelectorAll('.filter-btn');
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-      filterMap(btn.getAttribute('data-cat'));
-      if (window.innerWidth <= 768) sidebar.classList.remove('is-open');
-    });
-  });
+  const filterBtns = sidebarCategories.querySelectorAll('.filter-btn');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      filterMap(btn.getAttribute('data-cat'));
+      if (window.innerWidth <= 768) sidebar.classList.remove('is-open');
+    });
+  });
 }
 
 function filterMap(category) {
