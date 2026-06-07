@@ -441,3 +441,81 @@ html, body {
   clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
 
+/* ── PDF LAYOUT (1 В 1) ─────────────────────────────────── */
+/* Скрываем старые скучные заголовки в модалке */
+#modal-header { display: none; }
+#modal-panel { background-color: #e4e0d7; /* Цвет теплой бумаги */ }
+
+.pdf-layout {
+  font-family: 'Special Elite', monospace;
+  color: #333;
+  text-align: center;
+  padding: 10px 0 20px 0;
+}
+
+/* Главный заголовок (Зеленый маркер) */
+.pdf-title {
+  font-family: 'Caveat Brush', cursive;
+  color: #53694f;
+  font-size: 4rem;
+  line-height: 0.9;
+  margin: 0 10px 5px 10px;
+  text-transform: uppercase;
+}
+
+/* Подзаголовок */
+.pdf-subtitle {
+  font-size: 0.75rem;
+  color: #444;
+  margin: 0 20px 25px 20px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Лид-абзац (выровнен по центру) */
+.pdf-intro {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0 30px 30px 30px;
+  font-weight: bold;
+}
+
+/* Серая полоса на всю ширину */
+.pdf-history-banner {
+  background-color: rgba(184, 176, 160, 0.6);
+  padding: 10px 30px;
+  text-align: left;
+  margin-bottom: 20px;
+  /* Растягиваем полосу до самых краев окна */
+  margin-left: -24px; 
+  margin-right: -24px;
+}
+
+/* Слово HISTORIA (Красный маркер) */
+.pdf-history-title {
+  font-family: 'Caveat Brush', cursive;
+  color: #c75643;
+  font-size: 3rem;
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+/* Текст истории */
+.pdf-history-content {
+  text-align: left;
+  margin: 0 10px 30px 10px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Фирменный футер внизу */
+.pdf-footer {
+  font-family: 'Special Elite', monospace;
+  font-style: italic;
+  font-weight: bold;
+  color: #53694f;
+  margin-top: 50px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}

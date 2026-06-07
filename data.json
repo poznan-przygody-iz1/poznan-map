@@ -170,15 +170,15 @@
   },
   {
     "id": "bazylika-kolegiacka",
-    "title": "Bazylika Kolegiacka",
+    "title": "BAZYLIKA KOLEGIACKA",
+    "subtitle": "MATKI BOŻEJ NIEUSTAJĄCEJ POMOCY, ŚW. MARII MAGDALENY I ŚW. STANISŁAWA BISKUPA",
     "category": "Sakralne",
     "lat": 52.4065,
     "lng": 16.9345,
-    "description": "Fara Poznańska — oficjalnie Bazylika Kolegiacka Najświętszego Serca Pana Jezusa i Najświętszej Marii Panny — to najbardziej okazały kościół barokowy w Poznaniu, zwany „perłą baroku na ziemiach polskich”. Wzniesiona przez jezuitów w XVII–XVIII wieku, jej wnętrze zachwyca złoceniami, marmurami i bogatą dekoracją figuralną autorstwa włoskich i polskich mistrzów.",
+    "intro": "Barokowa świątynia z XVII w., uznawana za jeden z najpiękniejszych kościołów barokowych w Polsce. Jej wnętrze zachwyca bogactwem zdobień, złoceniami i iluzjonistycznymi freskami, które tworzą niezwykłą atmosferę. Miejsce o ogromnym znaczeniu historycznym i duchowym.",
+    "history": "Wkrótce pojawi się pełna historia tego niesamowitego miejsca...",
     "images": [
-      "https://placehold.co/800x500/c8813a/fdf7ee?text=Bazylika+Kolegiacka",
-      "https://placehold.co/800x500/1a1108/e8b84b?text=Fara+%E2%80%94+Wnętrze",
-      "https://placehold.co/800x500/7a5c38/f5efe3?text=Fara+%E2%80%94+Barok"
+      "img/bazylika-1.jpg"
     ]
   },
   {

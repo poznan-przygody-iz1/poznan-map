@@ -144,11 +144,27 @@ function renderMarkers(locations) {
 function openModal(loc) {
   currentLocation = loc;
 
-  /* Populate text */
-  titleEl.textContent       = loc.title;
-  categoryEl.textContent    = loc.category;
-  descEl.textContent        = loc.description;
-  coordsEl.textContent      = `${loc.lat.toFixed(4)}° N · ${loc.lng.toFixed(4)}° E`;
+  /* Populate text - PDF Layout */
+  const contentHTML = `
+    <div class="pdf-layout">
+      <h1 class="pdf-title">${loc.title}</h1>
+      ${loc.subtitle ? `<div class="pdf-subtitle">${loc.subtitle}</div>` : ''}
+      <div class="pdf-intro">${loc.intro || loc.description}</div>
+      
+      <div class="pdf-history-banner">
+        <h2 class="pdf-history-title">HISTORIA</h2>
+      </div>
+      
+      <div class="pdf-history-content">
+        ${loc.history ? `<p>${loc.history}</p>` : '<p>Wkrótce pojawi się pełna historia...</p>'}
+      </div>
+      
+      <div class="pdf-footer">
+        POZNAŃ- MISTO PRZYGÓG!<br>TWÓJ PRZEWODNIK PO POZNANIU
+      </div>
+    </div>
+  `;
+  descEl.innerHTML = contentHTML;
 
   /* Category accent color */
   const color = getCategoryColor(loc.category);
