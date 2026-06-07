@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   Poznań — Miasto Przygód  |  script.js (FINAL & FIXED)
+   Poznań — Miasto Przygód  |  script.js (Map + Sidebar + Geo)
    ═══════════════════════════════════════════════════════ */
 
 'use strict';
@@ -53,7 +53,7 @@ const map = L.map('map', {
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '© OpenStreetMap © CARTO',
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
   subdomains: 'abcd',
   maxZoom: 20
 }).addTo(map);
@@ -66,6 +66,7 @@ locateControl.onAdd = function() {
   btn.innerHTML = '🧭 Gdzie jestem?';
   btn.title = 'Pokaż moją lokalizację';
   
+  // Добавим немного стилей прямо сюда для красивой кнопки
   btn.style.cssText = `
     background: #fdf7ee; border: 2px solid rgba(122,92,56,.25); border-radius: 8px;
     padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
@@ -93,6 +94,7 @@ map.on('locationfound', function(e) {
   if (userMarker) {
     userMarker.setLatLng(e.latlng);
   } else {
+    // Красивый синий кружочек для геолокации
     const userIcon = L.divIcon({
       html: `<div style="width:16px;height:16px;background:#2980b9;border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>`,
       className: '',
@@ -108,29 +110,30 @@ map.on('locationfound', function(e) {
 map.on('locationerror', function(e) {
   const btn = document.querySelector('.locate-btn');
   if (btn) btn.innerHTML = '🧭 Gdzie jestem?';
-  alert('Nie udało się pobrać lokalizacji. Sprawdź GPS.');
+  alert('Nie udało się pobrać lokalizacji. Sprawdź, czy masz włączony GPS i czy zezwoliłeś przeglądarce na dostęp do lokalizacji.');
 });
 
-/* ── STATE & DOM REFS ────────────────────────────────────── */
+/* ── STATE ───────────────────────────────────────────────── */
 let swiperInstance = null;
 let currentLocation = null;
-let allMarkers = []; 
+let allMarkers = []; // Хранилище маркеров для фильтрации
 
-const overlay       = document.getElementById('modal-overlay');
-const panel         = document.getElementById('modal-panel');
-const closeBtn      = document.getElementById('modal-close');
-const titleEl       = document.getElementById('modal-title');
-const categoryEl    = document.getElementById('modal-category');
-const descEl        = document.getElementById('modal-description');
-const swiperWrap    = document.getElementById('swiper-wrapper');
-const galCurrent    = document.getElementById('gallery-current');
-const galTotal      = document.getElementById('gallery-total');
-const loadScreen    = document.getElementById('loading-screen');
-const searchInput   = document.getElementById('search-input');
-const searchResults = document.getElementById('search-results');
-const sidebar       = document.getElementById('sidebar');
-const menuToggle    = document.getElementById('menu-toggle');
-const sidebarClose  = document.getElementById('sidebar-close');
+/* ── DOM REFS ────────────────────────────────────────────── */
+const overlay     = document.getElementById('modal-overlay');
+const panel       = document.getElementById('modal-panel');
+const closeBtn    = document.getElementById('modal-close');
+const titleEl     = document.getElementById('modal-title');
+const categoryEl  = document.getElementById('modal-category');
+const descEl      = document.getElementById('modal-description');
+const swiperWrap  = document.getElementById('swiper-wrapper');
+const galCurrent  = document.getElementById('gallery-current');
+const galTotal    = document.getElementById('gallery-total');
+const loadScreen  = document.getElementById('loading-screen');
+
+// Sidebar Refs
+const sidebar = document.getElementById('sidebar');
+const menuToggle = document.getElementById('menu-toggle');
+const sidebarClose = document.getElementById('sidebar-close');
 const sidebarCategories = document.getElementById('sidebar-categories');
 
 /* ── FETCH DATA ──────────────────────────────────────────── */
@@ -140,8 +143,7 @@ async function loadData() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     renderMarkers(data);
-    renderSidebarFilters(data); 
-    initSearch(data);
+    renderSidebarFilters(data); // Генерируем фильтры
     dismissLoadingScreen();
   } catch (err) {
     console.error('Błąd ładowania danych:', err);
@@ -169,6 +171,7 @@ function renderMarkers(locations) {
 
     marker.on('click', () => openModal(loc));
 
+    // Сохраняем маркер для бокового меню
     allMarkers.push({ category: loc.category, marker: marker });
   });
 }
@@ -219,76 +222,13 @@ function filterMap(category) {
   });
 }
 
-/* ── LIVE SEARCH ─────────────────────────────────────────── */
-function initSearch(locations) {
-  if (!searchInput || !searchResults) return;
-
-  searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    searchResults.innerHTML = '';
-
-    if (query.length < 2) {
-      searchResults.classList.remove('is-active');
-      return;
-    }
-
-    const matches = locations.filter(loc => 
-      loc.title.toLowerCase().includes(query) || 
-      loc.category.toLowerCase().includes(query)
-    );
-
-    if (matches.length > 0) {
-      matches.forEach(loc => {
-        const div = document.createElement('div');
-        div.className = 'search-item';
-        div.innerHTML = `<strong>${loc.title}</strong> <span style="font-size:11px; color:#7a5c38; display:block;">${loc.category}</span>`;
-        
-        div.addEventListener('click', () => {
-          searchInput.value = '';
-          searchResults.classList.remove('is-active');
-          sidebar.classList.remove('is-open');
-
-          filterMap('all');
-          const allBtn = document.querySelector('[data-cat="all"]');
-          if (allBtn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('is-active'));
-            allBtn.classList.add('is-active');
-          }
-
-          // 3. Кинематографично летим к точке!
-          map.flyTo([loc.lat, loc.lng], 16, { animate: true, duration: 1.5 });
-
-          // 4. Открываем модальное окно после завершения полета
-          setTimeout(() => {
-            openModal(loc);
-          }, 1500);
-        
-        searchResults.appendChild(div);
-      });
-      searchResults.classList.add('is-active');
-    } else {
-      const div = document.createElement('div');
-      div.className = 'search-item';
-      div.textContent = 'Nic nie znaleziono...';
-      div.style.cursor = 'default';
-      searchResults.appendChild(div);
-      searchResults.classList.add('is-active');
-    }
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-      searchResults.classList.remove('is-active');
-    }
-  });
-}
-
 /* ── MODAL ───────────────────────────────────────────────── */
 function openModal(loc) {
   currentLocation = loc;
   titleEl.textContent    = loc.title;
   categoryEl.textContent = loc.category;
 
+  /* Описание + Твои крутые кнопки PDF и маршрута */
   descEl.innerHTML = `
     <p style="margin-bottom: 20px; line-height: 1.5;">${loc.description}</p>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
