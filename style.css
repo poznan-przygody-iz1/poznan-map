@@ -115,20 +115,25 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
 .header-inner {
   display: flex;
   align-items: center;
-  justify-content: center; /* Центрируем всё содержимое внутри */
-  gap: 25px;               /* Расстояние между кнопками и логотипом */
+  justify-content: center;
+  gap: 15px;               /* Уменьшили расстояние между кнопками и логотипом */
   
   background: rgba(245, 239, 227, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1.5px solid rgba(122,92,56,.20);
   border-radius: 12px;
-  padding: 10px 20px;
+  
+  /* Уменьшаем отступы: сверху/снизу 8px, слева/справа 12px */
+  padding: 8px 12px;        
+  
   box-shadow: 0 4px 24px rgba(20,12,4,.18);
   pointer-events: auto;
   
-  width: auto;
-  min-width: 280px; /* Немного уменьшили для компактности */
+  /* Делаем плашку "по размеру контента" */
+  width: fit-content;      
+  min-width: 220px;        /* Минимальная ширина, чтобы логотип не сжимался */
+  margin: 0 auto;          /* Центрируем плашку на экране */
 }
 
 .header-titles { display: flex; flex-direction: row; align-items: center; padding: 0 40px;}
