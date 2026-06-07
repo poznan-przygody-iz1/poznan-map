@@ -113,11 +113,23 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
 }
 
 .header-inner {
-  position: relative; pointer-events: auto; /* Сама плашка кликабельна */
-  display: inline-flex; flex-direction: column; align-items: center; gap: 10px;
-  background: rgba(245, 239, 227, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(122,92,56,.20); border-radius: 12px; padding: 14px 24px;
+  display: flex;             /* Меняем на обычный flex */
+  align-items: center;       /* Центрируем по вертикали */
+  justify-content: space-between; /* Раскидываем элементы по краям */
+  gap: 20px;                 /* Расстояние между элементами */
+  
+  background: rgba(245, 239, 227, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(122,92,56,.20);
+  border-radius: 12px;
+  padding: 10px 20px;        /* Немного уменьшили padding для баланса */
   box-shadow: 0 4px 24px rgba(20,12,4,.18);
+  pointer-events: auto;
+  
+  /* Фиксируем ширину плашки, чтобы она не прыгала */
+  width: auto;
+  min-width: 300px;
 }
 
 .header-titles { display: flex; flex-direction: row; align-items: center; padding: 0 40px;}
@@ -138,9 +150,10 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
   flex-direction: row-reverse; /* Меняем порядок: меню слева, луна справа от него */
 }
 
-.theme-toggle, .menu-toggle {
-  background: none; border: none; color: var(--clr-sepia);
-  cursor: pointer; display: flex; padding: 4px; transition: all var(--dur-fast);
+.menu-toggle, .theme-toggle {
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
 }
 .theme-toggle:hover { transform: scale(1.15); }
 .menu-toggle:hover { color: var(--clr-amber); }
