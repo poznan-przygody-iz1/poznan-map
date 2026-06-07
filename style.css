@@ -720,3 +720,55 @@ html, body {
 .modal-content p {
   margin-bottom: 12px !important; 
 }
+
+/* Контейнер для кнопок в модальном окне */
+.modal-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(122, 92, 56, 0.15);
+}
+
+/* Общие стили для обеих кнопок */
+.modal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 48px; /* Жесткая высота для идеальной симметрии */
+  color: #f5efe3;
+  padding: 0 16px;
+  text-decoration: none;
+  font-family: 'Playfair Display', serif;
+  font-weight: bold;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s ease;
+}
+
+/* Общая анимация при наведении */
+.modal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Зеленая кнопка PDF */
+.modal-btn-pdf {
+  background-color: #53694f;
+}
+.modal-btn-pdf:hover {
+  background-color: #3e523b;
+}
+
+/* Синяя кнопка карты */
+.modal-btn-map {
+  background-color: #2980b9;
+}
+.modal-btn-map:hover {
+  background-color: #1c6ea4;
+}

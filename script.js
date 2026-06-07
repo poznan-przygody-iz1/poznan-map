@@ -233,41 +233,18 @@ function openModal(loc) {
   titleEl.textContent    = loc.title;
   categoryEl.textContent = loc.category;
 
-/* Описание + Идеально ровные кнопки с ЖЕСТКОЙ высотой */
+/* Описание + Чистые кнопки с CSS-классами */
   descEl.innerHTML = `
     <p style="margin-bottom: 20px; line-height: 1.6; color: #333;">${loc.description}</p>
     
-    <div style="
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-      gap: 12px; 
-      margin-top: 25px; 
-      padding-top: 20px; 
-      border-top: 1px solid rgba(122, 92, 56, 0.15);
-    ">
+    <div class="modal-actions">
       ${loc.pdf ? `
-        <a href="${loc.pdf}" target="_blank" style="
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          box-sizing: border-box; width: 100%; height: 48px; /* Жестко фиксируем высоту */
-          background-color: #53694f; color: #f5efe3;
-          padding: 0 16px; text-decoration: none; font-family: 'Playfair Display', serif;
-          font-weight: bold; font-size: 0.95rem; border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.25s ease;
-        " onmouseover="this.style.backgroundColor='#3e523b'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0, 0, 0, 0.2)';" 
-           onmouseout="this.style.backgroundColor='#53694f'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.15)';">
+        <a href="${loc.pdf}" target="_blank" class="modal-btn modal-btn-pdf">
           <span>📖</span> <span>Przewodnik (PDF)</span>
         </a>
       ` : ''}
       
-      <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-        box-sizing: border-box; width: 100%; height: 48px; /* Жестко фиксируем высоту */
-        background-color: #2980b9; color: #f5efe3;
-        padding: 0 16px; text-decoration: none; font-family: 'Playfair Display', serif;
-        font-weight: bold; font-size: 0.95rem; border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.25s ease;
-      " onmouseover="this.style.backgroundColor='#1c6ea4'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0, 0, 0, 0.2)';" 
-         onmouseout="this.style.backgroundColor='#2980b9'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.15)';">
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" class="modal-btn modal-btn-map">
         <span>🗺️</span> <span>Jak dojechać?</span>
       </a>
     </div>
