@@ -444,7 +444,7 @@ html, body {
 /* ── СТИЛИЗАЦИЯ САМОЙ КАРТЫ (ВИНТАЖ) ─────────────────────── */
 .leaflet-tile {
   /* Добавляем эффект старой бумаги: сепия, контраст и легкий сдвиг цвета */
-  filter: sepia(45%) contrast(115%) brightness(95%) hue-rotate(-5deg);
+  filter: sepia(45%) contrast(115%) brightness(45%) hue-rotate(-5deg);
 }
 
 /* Эффект виньетки (затемнение по краям экрана) */
