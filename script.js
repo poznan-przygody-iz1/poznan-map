@@ -356,14 +356,17 @@ function initSearch(locations) {
           filterMap('all');
           document.querySelector('[data-cat="all"]').classList.add('is-active');
 
-          // 3. Кинематографично летим к точке!
-          map.flyTo([loc.lat, loc.lng], 16, { animate: true, duration: 1.5 });
+          // 3. Кинематографично летим к точке (чуть смягчили параметры)
+          map.flyTo([loc.lat, loc.lng], 16, { 
+            animate: true, 
+            duration: 1.5,
+            easeLinearity: 0.25 // Делает кривую ускорения/торможения более плавной
+          });
 
-          // 4. Открываем модальное окно после завершения полета
-          setTimeout(() => {
+          // 4. Ждем ПОЛНОГО завершения полета, и только тогда открываем окно
+          map.once('moveend', () => {
             openModal(loc);
-          }, 1500);
-        });
+          });
         
         searchResults.appendChild(div);
       });
