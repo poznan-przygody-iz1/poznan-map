@@ -61,9 +61,9 @@ const map = L.map('map', {
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
 /* Подключение стилизованных слоев CartoDB Voyager */
-L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-  maxZoom: 17,
-  attribution: '&copy; OpenTopoMap'
+L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {
+  maxZoom: 16,
+  attribution: '&copy; Stadia Maps'
 }).addTo(map);
 
 /* ── STATE ───────────────────────────────────────────────── */
