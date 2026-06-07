@@ -120,7 +120,7 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
   box-shadow: 0 4px 24px rgba(20,12,4,.18);
 }
 
-.header-titles { display: flex; flex-direction: column; align-items: center; }
+.header-titles { display: flex; flex-direction: column; align-items: center; padding: 0 40px;}
 .header-logo { font-family: var(--ff-display); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: .06em; }
 .logo-poz { color: var(--clr-ink); }
 .logo-nan { color: var(--clr-amber); }
@@ -128,8 +128,14 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
 
 /* Блок с кнопками Луны и Меню */
 .header-controls {
-  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-  display: flex; align-items: center; gap: 12px;
+  position: absolute;
+  left: 16px; /* Переносим блок к левому краю */
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-direction: row-reverse; /* Меняем порядок: меню слева, луна справа от него */
 }
 
 .theme-toggle, .menu-toggle {
