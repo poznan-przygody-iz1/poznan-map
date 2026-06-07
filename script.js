@@ -54,7 +54,7 @@ const map = L.map('map', {
   minZoom:          12,
   maxZoom:          18,
   zoomControl:      false,
-  attributionControl: true,
+  attributionControl: false,
 });
 
 /* Контрол зума перемещен в правый нижний угол */
