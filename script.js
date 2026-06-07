@@ -196,27 +196,45 @@ function openModal(loc) {
   titleEl.textContent    = loc.title;
   categoryEl.textContent = loc.category;
 
-  /* 2. Генерируем описание и кнопку на PDF (если она есть в JSON) */
+  /* 2. Генерируем описание и кнопки (PDF + Google Maps) */
   descEl.innerHTML = `
     <p style="margin-bottom: 20px; line-height: 1.5;">${loc.description}</p>
-    ${loc.pdf ? `
-      <a href="${loc.pdf}" target="_blank" style="
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+      ${loc.pdf ? `
+        <a href="${loc.pdf}" target="_blank" style="
+          display: inline-block;
+          background-color: #53694f;
+          color: #f5efe3;
+          padding: 12px 20px;
+          text-decoration: none;
+          font-family: 'Playfair Display', serif;
+          font-weight: bold;
+          font-size: 1rem;
+          border-radius: 6px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          transition: transform 0.2s, background-color 0.2s;
+        " onmouseover="this.style.backgroundColor='#3e523b'; this.style.transform='translateY(-2px)';" 
+           onmouseout="this.style.backgroundColor='#53694f'; this.style.transform='translateY(0)';">
+          📖 Przewodnik (PDF)
+        </a>
+      ` : ''}
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="
         display: inline-block;
-        background-color: #53694f;
+        background-color: #2980b9;
         color: #f5efe3;
-        padding: 12px 24px;
+        padding: 12px 20px;
         text-decoration: none;
         font-family: 'Playfair Display', serif;
         font-weight: bold;
-        font-size: 1.1rem;
+        font-size: 1rem;
         border-radius: 6px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         transition: transform 0.2s, background-color 0.2s;
-      " onmouseover="this.style.backgroundColor='#3e523b'; this.style.transform='translateY(-2px)';" 
-         onmouseout="this.style.backgroundColor='#53694f'; this.style.transform='translateY(0)';">
-        📖 Czytaj w Przewodniku (PDF)
+      " onmouseover="this.style.backgroundColor='#1c6ea4'; this.style.transform='translateY(-2px)';" 
+         onmouseout="this.style.backgroundColor='#2980b9'; this.style.transform='translateY(0)';">
+        🗺️ Jak dojechać?
       </a>
-    ` : ''}
+    </div>
   `;
 
   /* 3. Category accent color */
