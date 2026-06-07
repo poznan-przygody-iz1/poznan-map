@@ -65,6 +65,56 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
   maxZoom: 20
 }).addTo(map);
 
+/* ── GEOLOCATION (ГДЕ Я?) ────────────────────────────────── */
+// Создаем кнопку интерфейса
+const locateControl = L.control({ position: 'bottomright' });
+
+locateControl.onAdd = function() {
+  const btn = L.DomUtil.create('button', 'locate-btn');
+  btn.innerHTML = '🧭 Gdzie jestem?';
+  btn.title = 'Pokaż moją lokalizację';
+  
+  btn.onclick = function(e) {
+    e.stopPropagation();
+    btn.innerHTML = '⏳ Szukam...';
+    // Запрашиваем геолокацию с зумом 16
+    map.locate({ setView: true, maxZoom: 16 });
+  };
+  return btn;
+};
+locateControl.addTo(map);
+
+// Переменная для хранения маркера пользователя
+let userMarker = null;
+
+// Если локация успешно найдена
+map.on('locationfound', function(e) {
+  const btn = document.querySelector('.locate-btn');
+  if (btn) btn.innerHTML = '🧭 Gdzie jestem?';
+
+  // Если точка уже есть, просто двигаем её
+  if (userMarker) {
+    userMarker.setLatLng(e.latlng);
+  } else {
+    // Если точки нет, создаем её
+    const userIcon = L.divIcon({
+      className: 'user-location-dot',
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+    userMarker = L.marker(e.latlng, { icon: userIcon })
+      .addTo(map)
+      .bindTooltip('Jesteś tutaj', { direction: 'top', offset: [0, -10] });
+  }
+});
+
+// Если пользователь запретил доступ или GPS выключен
+map.on('locationerror', function(e) {
+  const btn = document.querySelector('.locate-btn');
+  if (btn) btn.innerHTML = '🧭 Gdzie jestem?';
+  alert('Nie udało się pobrać lokalizacji. Sprawdź, czy masz włączony GPS i czy zezwoliłeś przeglądarce na dostęp do lokalizacji.');
+});
+
 /* ── STATE ───────────────────────────────────────────────── */
 let swiperInstance = null;
 let currentLocation = null;

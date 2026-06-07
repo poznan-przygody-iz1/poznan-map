@@ -519,3 +519,40 @@ html, body {
   font-size: 0.9rem;
   opacity: 0.9;
 }
+
+/* ── КНОПКА ГЕОЛОКАЦИИ ───────────────────────────────────── */
+.locate-btn {
+  background-color: #f5efe3; /* Цвет пергамента */
+  border: 2px solid #53694f; /* Фирменный зеленый */
+  color: #53694f;
+  font-family: 'Playfair Display', serif;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.2s;
+}
+
+.locate-btn:hover {
+  background-color: #53694f;
+  color: #f5efe3;
+}
+
+/* ── ПУЛЬСИРУЮЩАЯ ТОЧКА ПОЛЬЗОВАТЕЛЯ ─────────────────────── */
+.user-location-dot {
+  background-color: #2980b9; /* Ярко-синий цвет */
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 10px rgba(41, 128, 185, 0.8);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(41, 128, 185, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(41, 128, 185, 0); }
+}
