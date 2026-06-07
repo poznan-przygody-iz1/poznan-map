@@ -120,7 +120,7 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
   box-shadow: 0 4px 24px rgba(20,12,4,.18);
 }
 
-.header-titles { display: flex; flex-direction: column; align-items: center; padding: 0 40px;}
+.header-titles { display: flex; flex-direction: row; align-items: center; padding: 0 40px;}
 .header-logo { font-family: var(--ff-display); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: .06em; }
 .logo-poz { color: var(--clr-ink); }
 .logo-nan { color: var(--clr-amber); }
