@@ -63,6 +63,7 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
   inset: 0;
   z-index: 0;
   cursor: grab;
+  pointer-events: auto !important;
 }
 #map:active { cursor: grabbing; }
 
