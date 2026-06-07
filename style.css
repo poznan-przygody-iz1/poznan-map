@@ -293,7 +293,7 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
 /* ── SIDEBAR & MENU ──────────────────────────────────────── */
 .sidebar {
   position: fixed; top: 0; left: 0; bottom: 0; width: 320px; max-width: 100%;
-  background: var(--clr-cream); z-index: 2000; box-shadow: 4px 0 24px rgba(20,12,4,.15);
+  background: var(--clr-cream); z-index: 3000; box-shadow: 4px 0 24px rgba(20,12,4,.15);
   transform: translateX(-100%); transition: transform var(--dur-med) var(--ease-out);
   display: flex; flex-direction: column;
 }
