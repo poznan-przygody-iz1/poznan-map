@@ -255,16 +255,13 @@ function initSearch(locations) {
             allBtn.classList.add('is-active');
           }
 
-          map.flyTo([loc.lat, loc.lng], 16, { 
-            animate: true, 
-            duration: 1.5,
-            easeLinearity: 0.25 
-          });
+          // 3. Кинематографично летим к точке!
+          map.flyTo([loc.lat, loc.lng], 16, { animate: true, duration: 1.5 });
 
-          map.once('moveend', () => {
+          // 4. Открываем модальное окно после завершения полета
+          setTimeout(() => {
             openModal(loc);
-          });
-        });
+          }, 1500);
         
         searchResults.appendChild(div);
       });
