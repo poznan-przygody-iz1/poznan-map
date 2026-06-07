@@ -355,17 +355,3 @@ function showDataError() {
 
 /* ── INIT ────────────────────────────────────────────────── */
 loadData();
-
-/* ── DEV TOOL: ИНСТРУМЕНТ ДЛЯ ПОДБОРА КООРДИНАТ (ВРЕМЕННО) ── */
-map.on('click', function(e) {
-  const lat = e.latlng.lat.toFixed(5);
-  const lng = e.latlng.lng.toFixed(5);
-  const textToCopy = `"lat": ${lat},\n"lng": ${lng},`;
-  
-  // Копируем прямо в буфер обмена
-  navigator.clipboard.writeText(textToCopy).then(() => {
-    alert(`Координаты скопированы!\n\n${textToCopy}\n\nТеперь вставь их в data.json вместо старых.`);
-  }).catch(err => {
-    alert(`Широта: ${lat}\nДолгота: ${lng}`);
-  });
-});
