@@ -6,7 +6,6 @@
     "lat": 52.40854,
     "lng": 16.93421,
     "description": "Renesansowy ratusz na Starym Rynku to jeden z najpiękniejszych przykładów architektury renesansowej w Polsce. Wzniesiony w XVI wieku przez włoskiego architekta Jana Baptystę Quadro, zachwyca loggią arkadową i wysoką attyką. Każdego południa w samo południe z wieżowej wieżyczki wybiega para mechanicznych koziołków, które trzykrotnie trykają się rogami – symbol Poznania znany na całą Polskę.",
-    "pdf": "ratusz.pdf",
     "images": [
       "https://placehold.co/800x500/7a5c38/f5efe3?text=Ratusz+Poznań",
       "https://placehold.co/800x500/c8813a/1a1108?text=Ratusz+%E2%80%94+Detale",
@@ -20,7 +19,6 @@
     "lat": 52.40779,
     "lng": 16.93342,
     "description": "Serce Poznania i jedno z największych średniowiecznych placów rynkowych w Polsce. Stary Rynek o wymiarach 141×141 metrów otaczają barwne kamieniczki z XVII i XVIII wieku, odbudowane po zniszczeniach II wojny światowej. Plac tętni życiem przez cały rok — latem wypełniają go ogródki restauracyjne, zimą rozświetla go jarmark bożonarodzeniowy.",
-    "pdf": "stary-rynek.pdf",
     "images": [
       "https://placehold.co/800x500/c0392b/fdf7ee?text=Stary+Rynek",
       "https://placehold.co/800x500/7a5c38/f5efe3?text=Stary+Rynek+%E2%80%94+Panorama",
@@ -34,7 +32,6 @@
     "lat": 52.41146,
     "lng": 16.94818,
     "description": "Katedra Świętych Apostołów Piotra i Pawła to najstarsza polska katedra i jeden z najważniejszych kościołów w kraju. Wzniesiona w X wieku na Ostrowie Tumskim, pochowani są tu pierwsi władcy Polski — Mieszko I i Bolesław Chrobry. Gotycka bazylika kryje w swoich kapplicach bezcenne skarby sztuki średniowiecznej i renesansowej.",
-    "pdf": "katedra.pdf",
     "images": [
       "https://placehold.co/800x500/1a1108/e8b84b?text=Katedra+Poznańska",
       "https://placehold.co/800x500/7a5c38/f5efe3?text=Katedra+%E2%80%94+Wnętrze",
@@ -48,7 +45,6 @@
     "lat": 52.40920,
     "lng": 16.93112,
     "description": "Zamek Królewski na Górze Przemysła to odbudowana rezydencja pierwszych Piastów, skąd rządzono Polską w średniowieczu. Dziś mieści Muzeum Sztuk Użytkowych z imponującą kolekcją rzemiosła artystycznego. Z wieży zamkowej roztacza się panorama miasta, a w podziemiach można zobaczyć pozostałości pierwotnej romańskiej budowli z X wieku.",
-    "pdf": "zamek-krolewski.pdf",
     "images": [
       "https://placehold.co/800x500/c8813a/1a1108?text=Zamek+Królewski",
       "https://placehold.co/800x500/1a1108/e8b84b?text=Zamek+%E2%80%94+Panorama",
@@ -62,7 +58,6 @@
     "lat": 52.40792,
     "lng": 16.91879,
     "description": "Centrum Kultury Zamek mieści się w dawnym Zamku Cesarskim, wzniesionym przez Niemców na początku XX wieku jako symbol władzy pruskiej. Dziś jest to jeden z najważniejszych ośrodków kulturalnych Poznania — goszczący teatr, kino, galerie sztuki, klub muzyczny i przestrzenie wystawowe. Architektura neoromańska budynku robi ogromne wrażenie.",
-    "pdf": "centrum-kultury-zamek.pdf",
     "images": [
       "https://placehold.co/800x500/1a1108/c8813a?text=Centrum+Kultury+Zamek",
       "https://placehold.co/800x500/7a5c38/f5efe3?text=CK+Zamek+%E2%80%94+Sala",
@@ -76,7 +71,6 @@
     "lat": 52.40711,
     "lng": 16.91784,
     "description": "Filharmonia Poznańska im. Tadeusza Szeligowskiego to jeden z czołowych ośrodków muzycznych w Polsce. Klasycystyczny gmach z 1910 roku mieści dwie sale koncertowe — Wielką na ponad 900 miejsc i Kameralną. Rezyduje tu Orkiestra Filharmonii Poznańskiej oraz Chór Filharmonii, znane ze świetnych nagrań i sukcesów na konkursach międzynarodowych.",
-    "pdf": "filharmonia.pdf",
     "images": [
       "https://placehold.co/800x500/7a5c38/e8b84b?text=Filharmonia+Poznańska",
       "https://placehold.co/800x500/1a1108/f5efe3?text=Filharmonia+%E2%80%94+Sala",
@@ -90,7 +84,6 @@
     "lat": 52.40996,
     "lng": 16.91743,
     "description": "Teatr Wielki im. Stanisława Moniuszki to jedna z największych scen operowych w Polsce i Europie Środkowej. Monumentalny gmach w stylu neoklasycystycznym, wzniesiony w 1910 roku, dysponuje salą na 900 widzów. Scena mierzy ponad 24 metry głębokości, co umożliwia wystawianie gigantycznych spektakli operowych i baletowych na światowym poziomie.",
-    "pdf": "teatr-wielki.pdf",
     "images": [
       "https://placehold.co/800x500/c8813a/1a1108?text=Teatr+Wielki",
       "https://placehold.co/800x500/7a5c38/f5efe3?text=Teatr+%E2%80%94+Scena",
@@ -104,7 +97,6 @@
     "lat": 52.40801,
     "lng": 16.92875,
     "description": "Plac Wolności to reprezentacyjny plac w centrum Poznania, otoczony neoklasycystycznymi budynkami z XIX i XX wieku. Dawny plac Wilhelmowski po odzyskaniu niepodległości zmienił nazwę i stał się symbolem wolnej Polski. Dominuje tu Biblioteka Raczyńskich oraz pomnik Hygiei. Plac jest popularnym miejscem spotkań poznaniaków i punktem wyjścia licznych tras turystycznych.",
-    "pdf": "plac-wolnosci.pdf",
     "images": [
       "https://placehold.co/800x500/e8b84b/1a1108?text=Plac+Wolności",
       "https://placehold.co/800x500/c8813a/fdf7ee?text=Plac+Wolności+%E2%80%94+Widok",
@@ -118,7 +110,6 @@
     "lat": 52.40196,
     "lng": 16.90189,
     "description": "Palmiarnia Poznańska w Parku Wilsona to jeden z największych ogrodów botanycznych i zielonych muzeów w Polsce. Kompleks sześciu pawilonów szklanych kryje egzotyczne rośliny z całego świata — od tropikalnych palm po kaktusowe pustynie i wodne lilie. Wybudowana w 1910 roku, po wielokrotnych modernizacjach, dziś zachwyca zarówno architekturą, jak i różnorodnością flory.",
-    "pdf": "palmiarnia.pdf",
     "images": [
       "https://placehold.co/800x500/7a5c38/f5efe3?text=Palmiarnia+Poznańska",
       "https://placehold.co/800x500/1a1108/c8813a?text=Palmiarnia+%E2%80%94+Tropiki",
@@ -132,7 +123,6 @@
     "lat": 52.39856,
     "lng": 16.90267,
     "description": "Park Wilsona to jeden z najpiękniejszych parków w centrum Poznania, założony na przełomie XIX i XX wieku w stylu krajobrazowym. Rozległy staw z fontanną, rozłożyste platany i romantyczne alejki tworzą przestrzeń idealną do relaksu. Park sąsiaduje z Palmiarnią i jest chętnie odwiedzany przez rodziny z dziećmi, joggingowiczów i zakochanych poznaniaków.",
-    "pdf": "park-wilsona.pdf",
     "images": [
       "https://placehold.co/800x500/7a5c38/e8b84b?text=Park+Wilsona",
       "https://placehold.co/800x500/c8813a/1a1108?text=Park+%E2%80%94+Staw",
@@ -146,7 +136,6 @@
     "lat": 52.40840,
     "lng": 16.92224,
     "description": "Okrąglak to legendarny powojenny dom handlowy na ul. Mielżyńskiego, zaprojektowany przez Marka Leykama w 1954 roku. Cylindryczna sylwetka budynku jest jednym z najbardziej rozpoznawalnych symboli powojennego modernizmu w Polsce. Wyjątkowa jak na czasy PRL-u lekkość fasady i śmiałość formy sprawiły, że Okrąglak stał się ikoną architektury i obiektem wycieczek studyjnych.",
-    "pdf": "okraglak.pdf",
     "images": [
       "https://placehold.co/800x500/c8813a/1a1108?text=Okrąglak",
       "https://placehold.co/800x500/1a1108/e8b84b?text=Okrąglak+%E2%80%94+Detal",
@@ -160,7 +149,6 @@
     "lat": 52.40956,
     "lng": 16.91900,
     "description": "Collegium Maius Uniwersytetu im. Adama Mickiewicza to gmach wybudowany w 1905 roku w stylu neogotyckim i neoromańskim. Jedna z wizytówek architektury akademickiej Poznania, siedziba administracji największej uczelni w mieście. Monumentalna fasada z czerwonej cegły i ozdobna wieżyczka nadają budynkowi dostojny, środkowoeuropejski charakter.",
-    "pdf": "collegium-maius.pdf",
     "images": [
       "https://placehold.co/800x500/c0392b/fdf7ee?text=Collegium+Maius",
       "https://placehold.co/800x500/1a1108/c8813a?text=Maius+%E2%80%94+Aula",
@@ -214,7 +202,6 @@
     "lat": 52.40672,
     "lng": 16.91930,
     "description": "Gmach Dyrekcji Okręgu Poczty i Telegrafów na ul. Kopernika to jeden z najbardziej okazałych przykładów architektury pruskiej w Poznaniu. Wybudowany w 1887 roku w stylu neorenesansowym, imponuje rozmachem fasady, bogatą dekoracją i wieżą zegarową. Przez ponad sto lat centrum komunikacji i łączności dla całego regionu Wielkopolski.",
-    "pdf": "dyrekcja-poczty.pdf",
     "images": [
       "https://placehold.co/800x500/7a5c38/f5efe3?text=Dyrekcja+Poczty",
       "https://placehold.co/800x500/1a1108/c8813a?text=Poczta+%E2%80%94+Fasada",
@@ -228,7 +215,6 @@
     "lat": 52.41004,
     "lng": 16.93282,
     "description": "Śródka to jedna z najstarszych dzielnic Poznania, założona jako osobne miasto w średniowieczu. Zachowane fragmenty murów obronnych i układ uliczek przywołują charakter dawnego Poznania. W ostatnich latach dzielnicę ożywiły murale opowiadające jej historię — projekt \"Śródka street art\" przyciąga turystów i miłośników sztuki ulicznej z całej Polski.",
-    "pdf": "mury-na-srodce.pdf",
     "images": [
       "https://placehold.co/800x500/1a1108/e8b84b?text=Mury+na+Śródce",
       "https://placehold.co/800x500/c8813a/fdf7ee?text=Śródka+%E2%80%94+Mural",
