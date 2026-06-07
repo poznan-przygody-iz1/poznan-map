@@ -129,6 +129,8 @@ const swiperWrap  = document.getElementById('swiper-wrapper');
 const galCurrent  = document.getElementById('gallery-current');
 const galTotal    = document.getElementById('gallery-total');
 const loadScreen  = document.getElementById('loading-screen');
+const searchInput   = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
 
 // Sidebar Refs
 const sidebar = document.getElementById('sidebar');
@@ -144,6 +146,7 @@ async function loadData() {
     const data = await res.json();
     renderMarkers(data);
     renderSidebarFilters(data); // Генерируем фильтры
+    initSearch(data);
     dismissLoadingScreen();
   } catch (err) {
     console.error('Błąd ładowania danych:', err);
@@ -315,6 +318,73 @@ function showDataError() {
   errDiv.style.cssText = `position:fixed; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center; background:rgba(26,17,8,.9); color:#f5efe3; font-family:'Playfair Display',serif; text-align:center; padding:24px;`;
   errDiv.innerHTML = `<div><p style="font-size:42px;margin-bottom:8px;">⚠</p><h2 style="font-size:22px;margin-bottom:10px;">Błąd ładowania danych</h2></div>`;
   document.body.appendChild(errDiv);
+}
+
+/* ── LIVE SEARCH ─────────────────────────────────────────── */
+function initSearch(locations) {
+  if (!searchInput || !searchResults) return;
+
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    searchResults.innerHTML = '';
+
+    // Начинаем искать только если введено больше 1 буквы
+    if (query.length < 2) {
+      searchResults.classList.remove('is-active');
+      return;
+    }
+
+    // Ищем совпадения в названиях и категориях
+    const matches = locations.filter(loc => 
+      loc.title.toLowerCase().includes(query) || 
+      loc.category.toLowerCase().includes(query)
+    );
+
+    if (matches.length > 0) {
+      matches.forEach(loc => {
+        const div = document.createElement('div');
+        div.className = 'search-item';
+        div.innerHTML = `<strong>${loc.title}</strong> <span style="font-size:11px; color:#7a5c38; display:block;">${loc.category}</span>`;
+        
+        div.addEventListener('click', () => {
+          // 1. Очищаем поиск и закрываем меню
+          searchInput.value = '';
+          searchResults.classList.remove('is-active');
+          sidebar.classList.remove('is-open');
+
+          // 2. Убеждаемся, что маркер не скрыт фильтром (показываем всё)
+          filterMap('all');
+          document.querySelector('[data-cat="all"]').classList.add('is-active');
+
+          // 3. Кинематографично летим к точке!
+          map.flyTo([loc.lat, loc.lng], 16, { animate: true, duration: 1.5 });
+
+          // 4. Открываем модальное окно после завершения полета
+          setTimeout(() => {
+            openModal(loc);
+          }, 1500);
+        });
+        
+        searchResults.appendChild(div);
+      });
+      searchResults.classList.add('is-active');
+    } else {
+      // Если ничего не найдено
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      div.textContent = 'Nic nie znaleziono...';
+      div.style.cursor = 'default';
+      searchResults.appendChild(div);
+      searchResults.classList.add('is-active');
+    }
+  });
+
+  // Прячем результаты, если кликнули куда-то мимо поиска
+  document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.remove('is-active');
+    }
+  });
 }
 
 /* ── INIT ────────────────────────────────────────────────── */
