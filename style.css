@@ -113,23 +113,22 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
 }
 
 .header-inner {
-  display: flex;             /* Меняем на обычный flex */
-  align-items: center;       /* Центрируем по вертикали */
-  justify-content: space-between; /* Раскидываем элементы по краям */
-  gap: 20px;                 /* Расстояние между элементами */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Центрируем всё содержимое внутри */
+  gap: 25px;               /* Расстояние между кнопками и логотипом */
   
   background: rgba(245, 239, 227, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1.5px solid rgba(122,92,56,.20);
   border-radius: 12px;
-  padding: 10px 20px;        /* Немного уменьшили padding для баланса */
+  padding: 10px 20px;
   box-shadow: 0 4px 24px rgba(20,12,4,.18);
   pointer-events: auto;
   
-  /* Фиксируем ширину плашки, чтобы она не прыгала */
   width: auto;
-  min-width: 300px;
+  min-width: 280px; /* Немного уменьшили для компактности */
 }
 
 .header-titles { display: flex; flex-direction: row; align-items: center; padding: 0 40px;}
@@ -150,13 +149,24 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
   flex-direction: row-reverse; /* Меняем порядок: меню слева, луна справа от него */
 }
 
+/* Общие стили для кнопок (прозрачный фон) */
 .menu-toggle, .theme-toggle {
-  position: static !important;
-  transform: none !important;
-  margin: 0 !important;
+  background: transparent !important; /* Прозрачный фон */
+  border: none !important;
+  color: var(--clr-sepia);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%; /* Круглая форма */
+  transition: all var(--dur-fast);
 }
-.theme-toggle:hover { transform: scale(1.15); }
-.menu-toggle:hover { color: var(--clr-amber); }
+/* Эффект при наведении */
+.menu-toggle:hover, .theme-toggle:hover {
+  background: rgba(122,92,56,0.1) !important; /* Легкое затемнение при наведении */
+  color: var(--clr-amber);
+}
 
 /* ── CUSTOM MARKER ───────────────────────────────────────── */
 .custom-pin {
