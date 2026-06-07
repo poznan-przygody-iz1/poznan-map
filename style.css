@@ -414,3 +414,10 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
 }
 @media (max-width: 420px) { .modal-gallery { height: 190px; } }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* Прячем шапку, когда меню открыто на мобильных */
+@media (max-width: 768px) {
+  .sidebar.is-open ~ .app-header {
+    display: none !important;
+  }
+}
