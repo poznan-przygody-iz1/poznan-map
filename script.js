@@ -34,13 +34,11 @@ function createPinSVG(color = '#c8813a') {
       <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(20,12,4,.45)"/>
     </filter>
   </defs>
-  <!-- Body -->
   <path class="pin-body"
     d="M18 2C10.27 2 4 8.27 4 16c0 11 14 29.5 14 29.5S32 27 32 16C32 8.27 25.73 2 18 2Z"
     fill="${color}"
     filter="url(#shadow-${color.slice(1)})"
   />
-  <!-- Inner circle -->
   <circle cx="18" cy="16" r="7" fill="rgba(255,255,255,0.22)" class="pin-icon"/>
   <circle cx="18" cy="16" r="4.5" fill="rgba(255,255,255,0.75)" class="pin-icon"/>
 </svg>`.trim();
@@ -144,35 +142,40 @@ function renderMarkers(locations) {
 function openModal(loc) {
   currentLocation = loc;
 
-  /* Populate text - PDF Layout */
-  const contentHTML = `
-    <div class="pdf-layout">
-      <h1 class="pdf-title">${loc.title}</h1>
-      ${loc.subtitle ? `<div class="pdf-subtitle">${loc.subtitle}</div>` : ''}
-      <div class="pdf-intro">${loc.intro || loc.description}</div>
-      
-      <div class="pdf-history-banner">
-        <h2 class="pdf-history-title">HISTORIA</h2>
-      </div>
-      
-      <div class="pdf-history-content">
-        ${loc.history ? `<p>${loc.history}</p>` : '<p>Wkrótce pojawi się pełna historia...</p>'}
-      </div>
-      
-      <div class="pdf-footer">
-        POZNAŃ- MISTO PRZYGÓG!<br>TWÓJ PRZEWODNIK PO POZNANIU
-      </div>
-    </div>
-  `;
-  descEl.innerHTML = contentHTML;
+  /* 1. Обновляем базовые тексты (ОБЯЗАТЕЛЬНО!) */
+  titleEl.textContent    = loc.title;
+  categoryEl.textContent = loc.category;
 
-  /* Category accent color */
+  /* 2. Генерируем описание и кнопку на PDF (если она есть в JSON) */
+  descEl.innerHTML = `
+    <p style="margin-bottom: 20px; line-height: 1.5;">${loc.description}</p>
+    ${loc.pdf ? `
+      <a href="${loc.pdf}" target="_blank" style="
+        display: inline-block;
+        background-color: #53694f;
+        color: #f5efe3;
+        padding: 12px 24px;
+        text-decoration: none;
+        font-family: 'Playfair Display', serif;
+        font-weight: bold;
+        font-size: 1.1rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s, background-color 0.2s;
+      " onmouseover="this.style.backgroundColor='#3e523b'; this.style.transform='translateY(-2px)';" 
+         onmouseout="this.style.backgroundColor='#53694f'; this.style.transform='translateY(0)';">
+        📖 Czytaj w Przewodniku (PDF)
+      </a>
+    ` : ''}
+  `;
+
+  /* 3. Category accent color */
   const color = getCategoryColor(loc.category);
   categoryEl.style.color       = color;
   categoryEl.style.background  = `${color}18`;
   categoryEl.style.borderColor = `${color}40`;
 
-  /* Build gallery slides */
+  /* 4. Build gallery slides */
   swiperWrap.innerHTML = '';
   const images = loc.images || [];
   images.forEach((src, i) => {
@@ -189,7 +192,7 @@ function openModal(loc) {
   galTotal.textContent = images.length;
   galCurrent.textContent = 1;
 
-  /* Destroy old Swiper before re-init */
+  /* 5. Destroy old Swiper before re-init */
   if (swiperInstance) {
     swiperInstance.destroy(true, true);
     swiperInstance = null;

@@ -170,15 +170,14 @@
   },
   {
     "id": "bazylika-kolegiacka",
-    "title": "BAZYLIKA KOLEGIACKA",
-    "subtitle": "MATKI BOŻEJ NIEUSTAJĄCEJ POMOCY, ŚW. MARII MAGDALENY I ŚW. STANISŁAWA BISKUPA",
+    "title": "Bazylika Kolegiacka",
     "category": "Sakralne",
     "lat": 52.4065,
     "lng": 16.9345,
-    "intro": "Barokowa świątynia z XVII w., uznawana za jeden z najpiękniejszych kościołów barokowych w Polsce. Jej wnętrze zachwyca bogactwem zdobień, złoceniami i iluzjonistycznymi freskami, które tworzą niezwykłą atmosferę. Miejsce o ogromnym znaczeniu historycznym i duchowym.",
-    "history": "Wkrótce pojawi się pełna historia tego niesamowitego miejsca...",
+    "description": "Barokowa świątynia z XVII w., uznawana za jeden z najpiękniejszych kościołów barokowych w Polsce. Jej wnętrze zachwyca bogactwem zdobień, złoceniami i iluzjonistycznymi freskami.",
+    "pdf": "bazylika.pdf",
     "images": [
-      "img/bazylika-1.jpg"
+      "https://placehold.co/800x500/c8813a/fdf7ee?text=Bazylika+Kolegiacka"
     ]
   },
   {
