@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   Poznań — Miasto Przygód  |  script.js (Map + Sidebar + Geo)
+   Poznań — Miasto Przygód  |  script.js (FINAL & FIXED)
    ═══════════════════════════════════════════════════════ */
 
 'use strict';
@@ -53,7 +53,7 @@ const map = L.map('map', {
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+  attribution: '© OpenStreetMap © CARTO',
   subdomains: 'abcd',
   maxZoom: 20
 }).addTo(map);
@@ -108,31 +108,29 @@ map.on('locationfound', function(e) {
 map.on('locationerror', function(e) {
   const btn = document.querySelector('.locate-btn');
   if (btn) btn.innerHTML = '🧭 Gdzie jestem?';
-  alert('Nie udało się pobrać lokalizacji. Sprawdź, czy masz włączony GPS i czy zezwoliłeś przeglądarce na dostęp do lokalizacji.');
+  alert('Nie udało się pobrać lokalizacji. Sprawdź GPS.');
 });
 
-/* ── STATE ───────────────────────────────────────────────── */
+/* ── STATE & DOM REFS ────────────────────────────────────── */
 let swiperInstance = null;
 let currentLocation = null;
 let allMarkers = []; 
 
-/* ── DOM REFS ────────────────────────────────────────────── */
-const overlay     = document.getElementById('modal-overlay');
-const panel       = document.getElementById('modal-panel');
-const closeBtn    = document.getElementById('modal-close');
-const titleEl     = document.getElementById('modal-title');
-const categoryEl  = document.getElementById('modal-category');
-const descEl      = document.getElementById('modal-description');
-const swiperWrap  = document.getElementById('swiper-wrapper');
-const galCurrent  = document.getElementById('gallery-current');
-const galTotal    = document.getElementById('gallery-total');
-const loadScreen  = document.getElementById('loading-screen');
+const overlay       = document.getElementById('modal-overlay');
+const panel         = document.getElementById('modal-panel');
+const closeBtn      = document.getElementById('modal-close');
+const titleEl       = document.getElementById('modal-title');
+const categoryEl    = document.getElementById('modal-category');
+const descEl        = document.getElementById('modal-description');
+const swiperWrap    = document.getElementById('swiper-wrapper');
+const galCurrent    = document.getElementById('gallery-current');
+const galTotal      = document.getElementById('gallery-total');
+const loadScreen    = document.getElementById('loading-screen');
 const searchInput   = document.getElementById('search-input');
 const searchResults = document.getElementById('search-results');
-
-const sidebar = document.getElementById('sidebar');
-const menuToggle = document.getElementById('menu-toggle');
-const sidebarClose = document.getElementById('sidebar-close');
+const sidebar       = document.getElementById('sidebar');
+const menuToggle    = document.getElementById('menu-toggle');
+const sidebarClose  = document.getElementById('sidebar-close');
 const sidebarCategories = document.getElementById('sidebar-categories');
 
 /* ── FETCH DATA ──────────────────────────────────────────── */
@@ -217,6 +215,73 @@ function filterMap(category) {
       if (!map.hasLayer(item.marker)) map.addLayer(item.marker);
     } else {
       if (map.hasLayer(item.marker)) map.removeLayer(item.marker);
+    }
+  });
+}
+
+/* ── LIVE SEARCH ─────────────────────────────────────────── */
+function initSearch(locations) {
+  if (!searchInput || !searchResults) return;
+
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    searchResults.innerHTML = '';
+
+    if (query.length < 2) {
+      searchResults.classList.remove('is-active');
+      return;
+    }
+
+    const matches = locations.filter(loc => 
+      loc.title.toLowerCase().includes(query) || 
+      loc.category.toLowerCase().includes(query)
+    );
+
+    if (matches.length > 0) {
+      matches.forEach(loc => {
+        const div = document.createElement('div');
+        div.className = 'search-item';
+        div.innerHTML = `<strong>${loc.title}</strong> <span style="font-size:11px; color:#7a5c38; display:block;">${loc.category}</span>`;
+        
+        div.addEventListener('click', () => {
+          searchInput.value = '';
+          searchResults.classList.remove('is-active');
+          sidebar.classList.remove('is-open');
+
+          filterMap('all');
+          const allBtn = document.querySelector('[data-cat="all"]');
+          if (allBtn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('is-active'));
+            allBtn.classList.add('is-active');
+          }
+
+          map.flyTo([loc.lat, loc.lng], 16, { 
+            animate: true, 
+            duration: 1.5,
+            easeLinearity: 0.25 
+          });
+
+          map.once('moveend', () => {
+            openModal(loc);
+          });
+        });
+        
+        searchResults.appendChild(div);
+      });
+      searchResults.classList.add('is-active');
+    } else {
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      div.textContent = 'Nic nie znaleziono...';
+      div.style.cursor = 'default';
+      searchResults.appendChild(div);
+      searchResults.classList.add('is-active');
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.remove('is-active');
     }
   });
 }
@@ -313,69 +378,6 @@ function showDataError() {
   errDiv.style.cssText = `position:fixed; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center; background:rgba(26,17,8,.9); color:#f5efe3; font-family:'Playfair Display',serif; text-align:center; padding:24px;`;
   errDiv.innerHTML = `<div><p style="font-size:42px;margin-bottom:8px;">⚠</p><h2 style="font-size:22px;margin-bottom:10px;">Błąd ładowania danych</h2></div>`;
   document.body.appendChild(errDiv);
-}
-
-/* ── LIVE SEARCH ─────────────────────────────────────────── */
-function initSearch(locations) {
-  if (!searchInput || !searchResults) return;
-
-  searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    searchResults.innerHTML = '';
-
-    if (query.length < 2) {
-      searchResults.classList.remove('is-active');
-      return;
-    }
-
-    const matches = locations.filter(loc => 
-      loc.title.toLowerCase().includes(query) || 
-      loc.category.toLowerCase().includes(query)
-    );
-
-    if (matches.length > 0) {
-      matches.forEach(loc => {
-        const div = document.createElement('div');
-        div.className = 'search-item';
-        div.innerHTML = `<strong>${loc.title}</strong> <span style="font-size:11px; color:#7a5c38; display:block;">${loc.category}</span>`;
-        
-        div.addEventListener('click', () => {
-          searchInput.value = '';
-          searchResults.classList.remove('is-active');
-          sidebar.classList.remove('is-open');
-
-          filterMap('all');
-          document.querySelector('[data-cat="all"]').classList.add('is-active');
-
-          map.flyTo([loc.lat, loc.lng], 16, { 
-            animate: true, 
-            duration: 1.5,
-            easeLinearity: 0.25 
-          });
-
-          map.once('moveend', () => {
-            openModal(loc);
-          });
-        }); // <--- Вот эту скобку ты случайно стер! Теперь она на месте.
-        
-        searchResults.appendChild(div);
-      });
-      searchResults.classList.add('is-active');
-    } else {
-      const div = document.createElement('div');
-      div.className = 'search-item';
-      div.textContent = 'Nic nie znaleziono...';
-      div.style.cursor = 'default';
-      searchResults.appendChild(div);
-      searchResults.classList.add('is-active');
-    }
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-      searchResults.classList.remove('is-active');
-    }
-  });
 }
 
 /* ── INIT ────────────────────────────────────────────────── */
