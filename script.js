@@ -66,7 +66,6 @@ locateControl.onAdd = function() {
   btn.innerHTML = '🧭 Gdzie jestem?';
   btn.title = 'Pokaż moją lokalizację';
   
-  // Добавим немного стилей прямо сюда для красивой кнопки
   btn.style.cssText = `
     background: #fdf7ee; border: 2px solid rgba(122,92,56,.25); border-radius: 8px;
     padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
@@ -94,7 +93,6 @@ map.on('locationfound', function(e) {
   if (userMarker) {
     userMarker.setLatLng(e.latlng);
   } else {
-    // Красивый синий кружочек для геолокации
     const userIcon = L.divIcon({
       html: `<div style="width:16px;height:16px;background:#2980b9;border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>`,
       className: '',
@@ -116,7 +114,7 @@ map.on('locationerror', function(e) {
 /* ── STATE ───────────────────────────────────────────────── */
 let swiperInstance = null;
 let currentLocation = null;
-let allMarkers = []; // Хранилище маркеров для фильтрации
+let allMarkers = []; 
 
 /* ── DOM REFS ────────────────────────────────────────────── */
 const overlay     = document.getElementById('modal-overlay');
@@ -132,7 +130,6 @@ const loadScreen  = document.getElementById('loading-screen');
 const searchInput   = document.getElementById('search-input');
 const searchResults = document.getElementById('search-results');
 
-// Sidebar Refs
 const sidebar = document.getElementById('sidebar');
 const menuToggle = document.getElementById('menu-toggle');
 const sidebarClose = document.getElementById('sidebar-close');
@@ -145,7 +142,7 @@ async function loadData() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     renderMarkers(data);
-    renderSidebarFilters(data); // Генерируем фильтры
+    renderSidebarFilters(data); 
     initSearch(data);
     dismissLoadingScreen();
   } catch (err) {
@@ -174,7 +171,6 @@ function renderMarkers(locations) {
 
     marker.on('click', () => openModal(loc));
 
-    // Сохраняем маркер для бокового меню
     allMarkers.push({ category: loc.category, marker: marker });
   });
 }
@@ -231,7 +227,6 @@ function openModal(loc) {
   titleEl.textContent    = loc.title;
   categoryEl.textContent = loc.category;
 
-  /* Описание + Твои крутые кнопки PDF и маршрута */
   descEl.innerHTML = `
     <p style="margin-bottom: 20px; line-height: 1.5;">${loc.description}</p>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
@@ -328,13 +323,11 @@ function initSearch(locations) {
     const query = e.target.value.toLowerCase().trim();
     searchResults.innerHTML = '';
 
-    // Начинаем искать только если введено больше 1 буквы
     if (query.length < 2) {
       searchResults.classList.remove('is-active');
       return;
     }
 
-    // Ищем совпадения в названиях и категориях
     const matches = locations.filter(loc => 
       loc.title.toLowerCase().includes(query) || 
       loc.category.toLowerCase().includes(query)
@@ -347,32 +340,28 @@ function initSearch(locations) {
         div.innerHTML = `<strong>${loc.title}</strong> <span style="font-size:11px; color:#7a5c38; display:block;">${loc.category}</span>`;
         
         div.addEventListener('click', () => {
-          // 1. Очищаем поиск и закрываем меню
           searchInput.value = '';
           searchResults.classList.remove('is-active');
           sidebar.classList.remove('is-open');
 
-          // 2. Убеждаемся, что маркер не скрыт фильтром (показываем всё)
           filterMap('all');
           document.querySelector('[data-cat="all"]').classList.add('is-active');
 
-          // 3. Кинематографично летим к точке (чуть смягчили параметры)
           map.flyTo([loc.lat, loc.lng], 16, { 
             animate: true, 
             duration: 1.5,
-            easeLinearity: 0.25 // Делает кривую ускорения/торможения более плавной
+            easeLinearity: 0.25 
           });
 
-          // 4. Ждем ПОЛНОГО завершения полета, и только тогда открываем окно
           map.once('moveend', () => {
             openModal(loc);
           });
+        }); // <--- Вот эту скобку ты случайно стер! Теперь она на месте.
         
         searchResults.appendChild(div);
       });
       searchResults.classList.add('is-active');
     } else {
-      // Если ничего не найдено
       const div = document.createElement('div');
       div.className = 'search-item';
       div.textContent = 'Nic nie znaleziono...';
@@ -382,7 +371,6 @@ function initSearch(locations) {
     }
   });
 
-  // Прячем результаты, если кликнули куда-то мимо поиска
   document.addEventListener('click', (e) => {
     if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
       searchResults.classList.remove('is-active');
