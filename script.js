@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   Poznań — Miasto Przygód  |  script.js (Geographic Map)
+   Poznań — Miasto Przygód  |  script.js (Map + Sidebar + Geo)
    ═══════════════════════════════════════════════════════ */
 
 'use strict';
@@ -34,18 +34,13 @@ function createPinSVG(color = '#c8813a') {
       <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(20,12,4,.45)"/>
     </filter>
   </defs>
-  <path class="pin-body"
-    d="M18 2C10.27 2 4 8.27 4 16c0 11 14 29.5 14 29.5S32 27 32 16C32 8.27 25.73 2 18 2Z"
-    fill="${color}"
-    filter="url(#shadow-${color.slice(1)})"
-  />
+  <path class="pin-body" d="M18 2C10.27 2 4 8.27 4 16c0 11 14 29.5 14 29.5S32 27 32 16C32 8.27 25.73 2 18 2Z" fill="${color}" filter="url(#shadow-${color.slice(1)})"/>
   <circle cx="18" cy="16" r="7" fill="rgba(255,255,255,0.22)" class="pin-icon"/>
   <circle cx="18" cy="16" r="4.5" fill="rgba(255,255,255,0.75)" class="pin-icon"/>
 </svg>`.trim();
 }
 
 /* ── MAP INIT ────────────────────────────────────────────── */
-// Инициализация реальной карты с центром в Познани
 const map = L.map('map', {
   center:           [52.4064, 16.9252],
   zoom:             14,
@@ -55,18 +50,15 @@ const map = L.map('map', {
   attributionControl: false,
 });
 
-/* Контрол зума перемещен в правый нижний угол */
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-/* Подключение стилизованных слоев CartoDB Voyager */
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
   subdomains: 'abcd',
   maxZoom: 20
 }).addTo(map);
 
 /* ── GEOLOCATION (ГДЕ Я?) ────────────────────────────────── */
-// Создаем кнопку интерфейса
 const locateControl = L.control({ position: 'bottomright' });
 
 locateControl.onAdd = function() {
@@ -74,31 +66,38 @@ locateControl.onAdd = function() {
   btn.innerHTML = '🧭 Gdzie jestem?';
   btn.title = 'Pokaż moją lokalizację';
   
+  // Добавим немного стилей прямо сюда для красивой кнопки
+  btn.style.cssText = `
+    background: #fdf7ee; border: 2px solid rgba(122,92,56,.25); border-radius: 8px;
+    padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    color: #7a5c38; cursor: pointer; box-shadow: 0 4px 16px rgba(20,12,4,.18);
+    margin-bottom: 10px; margin-right: 10px; transition: all 0.2s;
+  `;
+  btn.onmouseover = () => { btn.style.background = '#f5efe3'; btn.style.color = '#c8813a'; };
+  btn.onmouseout  = () => { btn.style.background = '#fdf7ee'; btn.style.color = '#7a5c38'; };
+
   btn.onclick = function(e) {
     e.stopPropagation();
     btn.innerHTML = '⏳ Szukam...';
-    // Запрашиваем геолокацию с зумом 16
     map.locate({ setView: true, maxZoom: 16 });
   };
   return btn;
 };
 locateControl.addTo(map);
 
-// Переменная для хранения маркера пользователя
 let userMarker = null;
 
-// Если локация успешно найдена
 map.on('locationfound', function(e) {
   const btn = document.querySelector('.locate-btn');
   if (btn) btn.innerHTML = '🧭 Gdzie jestem?';
 
-  // Если точка уже есть, просто двигаем её
   if (userMarker) {
     userMarker.setLatLng(e.latlng);
   } else {
-    // Если точки нет, создаем её
+    // Красивый синий кружочек для геолокации
     const userIcon = L.divIcon({
-      className: 'user-location-dot',
+      html: `<div style="width:16px;height:16px;background:#2980b9;border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>`,
+      className: '',
       iconSize: [16, 16],
       iconAnchor: [8, 8]
     });
@@ -108,7 +107,6 @@ map.on('locationfound', function(e) {
   }
 });
 
-// Если пользователь запретил доступ или GPS выключен
 map.on('locationerror', function(e) {
   const btn = document.querySelector('.locate-btn');
   if (btn) btn.innerHTML = '🧭 Gdzie jestem?';
@@ -118,6 +116,7 @@ map.on('locationerror', function(e) {
 /* ── STATE ───────────────────────────────────────────────── */
 let swiperInstance = null;
 let currentLocation = null;
+let allMarkers = []; // Хранилище маркеров для фильтрации
 
 /* ── DOM REFS ────────────────────────────────────────────── */
 const overlay     = document.getElementById('modal-overlay');
@@ -126,11 +125,16 @@ const closeBtn    = document.getElementById('modal-close');
 const titleEl     = document.getElementById('modal-title');
 const categoryEl  = document.getElementById('modal-category');
 const descEl      = document.getElementById('modal-description');
-const coordsEl    = document.getElementById('modal-coords');
 const swiperWrap  = document.getElementById('swiper-wrapper');
 const galCurrent  = document.getElementById('gallery-current');
 const galTotal    = document.getElementById('gallery-total');
 const loadScreen  = document.getElementById('loading-screen');
+
+// Sidebar Refs
+const sidebar = document.getElementById('sidebar');
+const menuToggle = document.getElementById('menu-toggle');
+const sidebarClose = document.getElementById('sidebar-close');
+const sidebarCategories = document.getElementById('sidebar-categories');
 
 /* ── FETCH DATA ──────────────────────────────────────────── */
 async function loadData() {
@@ -139,6 +143,7 @@ async function loadData() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     renderMarkers(data);
+    renderSidebarFilters(data); // Генерируем фильтры
     dismissLoadingScreen();
   } catch (err) {
     console.error('Błąd ładowania danych:', err);
@@ -150,11 +155,9 @@ async function loadData() {
 /* ── MARKERS ─────────────────────────────────────────────── */
 function renderMarkers(locations) {
   locations.forEach(loc => {
-    // Если точка не содержит гео-координат, пропускаем её, чтобы не сломать скрипт
     if (typeof loc.lat === 'undefined' || typeof loc.lng === 'undefined') return;
 
     const color = getCategoryColor(loc.category);
-
     const icon = L.divIcon({
       html: `<div class="custom-pin" role="button" tabindex="0" aria-label="${loc.title}">${createPinSVG(color)}</div>`,
       iconSize:   [36, 48],
@@ -164,72 +167,87 @@ function renderMarkers(locations) {
 
     const marker = L.marker([loc.lat, loc.lng], { icon, title: loc.title })
       .addTo(map)
-      .bindTooltip(loc.title, {
-        permanent: false,
-        direction: 'top',
-        offset:    [0, -44],
-        opacity:   1,
-      });
+      .bindTooltip(loc.title, { permanent: false, direction: 'top', offset: [0, -44], opacity: 1 });
 
     marker.on('click', () => openModal(loc));
 
-    /* Keyboard accessibility */
-    marker.on('add', () => {
-      const el = marker.getElement();
-      if (el) {
-        el.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openModal(loc);
-          }
-        });
-      }
+    // Сохраняем маркер для бокового меню
+    allMarkers.push({ category: loc.category, marker: marker });
+  });
+}
+
+/* ── SIDEBAR & FILTERING ─────────────────────────────────── */
+if(menuToggle && sidebarClose) {
+  menuToggle.addEventListener('click', () => sidebar.classList.add('is-open'));
+  sidebarClose.addEventListener('click', () => sidebar.classList.remove('is-open'));
+}
+
+function renderSidebarFilters(locations) {
+  if(!sidebarCategories) return;
+  const categories = [...new Set(locations.map(l => l.category))].sort();
+
+  let html = `<button class="filter-btn is-active" data-cat="all">
+                <span class="filter-color-dot" style="background: #999"></span>
+                Wszystkie miejsca
+              </button>`;
+
+  categories.forEach(cat => {
+    const color = getCategoryColor(cat);
+    html += `<button class="filter-btn" data-cat="${cat}">
+               <span class="filter-color-dot" style="background: ${color}"></span>
+               ${cat}
+             </button>`;
+  });
+
+  sidebarCategories.innerHTML = html;
+
+  const filterBtns = sidebarCategories.querySelectorAll('.filter-btn');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      filterMap(btn.getAttribute('data-cat'));
+      if (window.innerWidth <= 768) sidebar.classList.remove('is-open');
     });
+  });
+}
+
+function filterMap(category) {
+  allMarkers.forEach(item => {
+    if (category === 'all' || item.category === category) {
+      if (!map.hasLayer(item.marker)) map.addLayer(item.marker);
+    } else {
+      if (map.hasLayer(item.marker)) map.removeLayer(item.marker);
+    }
   });
 }
 
 /* ── MODAL ───────────────────────────────────────────────── */
 function openModal(loc) {
   currentLocation = loc;
-
-  /* 1. Обновляем базовые тексты (ОБЯЗАТЕЛЬНО!) */
   titleEl.textContent    = loc.title;
   categoryEl.textContent = loc.category;
 
-  /* 2. Генерируем описание и кнопки (PDF + Google Maps) */
+  /* Описание + Твои крутые кнопки PDF и маршрута */
   descEl.innerHTML = `
     <p style="margin-bottom: 20px; line-height: 1.5;">${loc.description}</p>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
       ${loc.pdf ? `
         <a href="${loc.pdf}" target="_blank" style="
-          display: inline-block;
-          background-color: #53694f;
-          color: #f5efe3;
-          padding: 12px 20px;
-          text-decoration: none;
-          font-family: 'Playfair Display', serif;
-          font-weight: bold;
-          font-size: 1rem;
-          border-radius: 6px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-          transition: transform 0.2s, background-color 0.2s;
+          display: inline-block; background-color: #53694f; color: #f5efe3;
+          padding: 10px 18px; text-decoration: none; font-family: 'Playfair Display', serif;
+          font-weight: bold; font-size: 0.95rem; border-radius: 6px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;
         " onmouseover="this.style.backgroundColor='#3e523b'; this.style.transform='translateY(-2px)';" 
            onmouseout="this.style.backgroundColor='#53694f'; this.style.transform='translateY(0)';">
           📖 Przewodnik (PDF)
         </a>
       ` : ''}
       <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="
-        display: inline-block;
-        background-color: #2980b9;
-        color: #f5efe3;
-        padding: 12px 20px;
-        text-decoration: none;
-        font-family: 'Playfair Display', serif;
-        font-weight: bold;
-        font-size: 1rem;
-        border-radius: 6px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        transition: transform 0.2s, background-color 0.2s;
+        display: inline-block; background-color: #2980b9; color: #f5efe3;
+        padding: 10px 18px; text-decoration: none; font-family: 'Playfair Display', serif;
+        font-weight: bold; font-size: 0.95rem; border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;
       " onmouseover="this.style.backgroundColor='#1c6ea4'; this.style.transform='translateY(-2px)';" 
          onmouseout="this.style.backgroundColor='#2980b9'; this.style.transform='translateY(0)';">
         🗺️ Jak dojechać?
@@ -237,64 +255,38 @@ function openModal(loc) {
     </div>
   `;
 
-  /* 3. Category accent color */
   const color = getCategoryColor(loc.category);
   categoryEl.style.color       = color;
   categoryEl.style.background  = `${color}18`;
   categoryEl.style.borderColor = `${color}40`;
 
-  /* 4. Build gallery slides */
   swiperWrap.innerHTML = '';
   const images = loc.images || [];
   images.forEach((src, i) => {
     const slide = document.createElement('div');
     slide.className = 'swiper-slide';
     const img = document.createElement('img');
-    img.src   = src;
-    img.alt   = `${loc.title} — zdjęcie ${i + 1}`;
-    img.loading = 'lazy';
-    slide.appendChild(img);
-    swiperWrap.appendChild(slide);
+    img.src = src; img.alt = `${loc.title} — zdjęcie ${i + 1}`; img.loading = 'lazy';
+    slide.appendChild(img); swiperWrap.appendChild(slide);
   });
 
   galTotal.textContent = images.length;
   galCurrent.textContent = 1;
 
-  /* 5. Destroy old Swiper before re-init */
-  if (swiperInstance) {
-    swiperInstance.destroy(true, true);
-    swiperInstance = null;
-  }
+  if (swiperInstance) { swiperInstance.destroy(true, true); swiperInstance = null; }
 
-  /* Show modal first so Swiper can calc dimensions */
   overlay.classList.add('is-open');
   overlay.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 
-  /* Init Swiper after paint */
   requestAnimationFrame(() => {
     swiperInstance = new Swiper('.modal-swiper', {
-      loop:           images.length > 1,
-      speed:          500,
-      effect:         'fade',
-      fadeEffect:     { crossFade: true },
-      navigation:     {
-        prevEl: '.swiper-button-prev',
-        nextEl: '.swiper-button-next',
-      },
-      pagination:     {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      on: {
-        slideChange() {
-          galCurrent.textContent = this.realIndex + 1;
-        },
-      },
+      loop: images.length > 1, speed: 500, effect: 'fade', fadeEffect: { crossFade: true },
+      navigation: { prevEl: '.swiper-button-prev', nextEl: '.swiper-button-next' },
+      pagination: { el: '.swiper-pagination', clickable: true },
+      on: { slideChange() { galCurrent.textContent = this.realIndex + 1; } },
     });
   });
-
-  /* Focus close button for a11y */
   requestAnimationFrame(() => closeBtn.focus());
 }
 
@@ -305,51 +297,23 @@ function closeModal() {
   currentLocation = null;
 }
 
-/* ── CLOSE TRIGGERS ──────────────────────────────────────── */
 closeBtn.addEventListener('click', closeModal);
-
-overlay.addEventListener('click', (e) => {
-  if (e.target === overlay) closeModal();
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && overlay.classList.contains('is-open')) {
-    closeModal();
-  }
-});
-
-/* Prevent panel click from closing overlay */
-panel.addEventListener('click', (e) => e.stopPropagation());
+overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal(); });
+if(panel) panel.addEventListener('click', (e) => e.stopPropagation());
 
 /* ── LOADING SCREEN ──────────────────────────────────────── */
 function dismissLoadingScreen() {
-  /* Wait for animation (1.4s) to finish before hiding */
   setTimeout(() => {
     loadScreen.classList.add('is-gone');
-    loadScreen.addEventListener('transitionend', () => {
-      loadScreen.style.display = 'none';
-    }, { once: true });
+    loadScreen.addEventListener('transitionend', () => { loadScreen.style.display = 'none'; }, { once: true });
   }, 1500);
 }
 
 function showDataError() {
   const errDiv = document.createElement('div');
-  errDiv.style.cssText = `
-    position:fixed; inset:0; z-index:5000;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(26,17,8,.9); color:#f5efe3;
-    font-family:'Playfair Display',serif; text-align:center; padding:24px;
-  `;
-  errDiv.innerHTML = `
-    <div>
-      <p style="font-size:42px;margin-bottom:8px;">⚠</p>
-      <h2 style="font-size:22px;margin-bottom:10px;">Błąd ładowania danych</h2>
-      <p style="font-size:14px;color:rgba(245,239,227,.6);max-width:320px;margin:0 auto;">
-        Upewnij się, że plik <code>data.json</code> znajduje się obok pliku
-        <code>index.html</code> i że strona jest serwowana przez lokalny serwer.
-      </p>
-    </div>
-  `;
+  errDiv.style.cssText = `position:fixed; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center; background:rgba(26,17,8,.9); color:#f5efe3; font-family:'Playfair Display',serif; text-align:center; padding:24px;`;
+  errDiv.innerHTML = `<div><p style="font-size:42px;margin-bottom:8px;">⚠</p><h2 style="font-size:22px;margin-bottom:10px;">Błąd ładowania danych</h2></div>`;
   document.body.appendChild(errDiv);
 }
 
