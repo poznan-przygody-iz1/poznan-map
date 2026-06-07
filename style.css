@@ -798,3 +798,36 @@ html, body {
 .modal-btn-map:hover {
   background-color: #1c6ea4;
 }
+
+/* ── DARK THEME (NOCNY POZNAŃ) ──────────────────────────── */
+.theme-toggle {
+  position: absolute;
+  right: 60px; /* Ставим аккуратно левее кнопки меню */
+  top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; padding: 4px;
+  transition: transform 0.2s;
+  z-index: 10;
+}
+.theme-toggle:hover { transform: translateY(-50%) scale(1.15); }
+
+/* Когда на body появляется этот класс, все цвета интерфейса переворачиваются! */
+body.dark-theme {
+  --clr-ink:        #f5efe3; /* Текст становится светлым кремовым */
+  --clr-cream:      #16100b; /* Фоны становятся темно-кофейными */
+  --clr-parchment:  #221911;
+  --clr-sepia:      #b59c7a; /* Коричневый становится светлее для контраста */
+  --clr-amber:      #e09e53;
+  --clr-glass:      rgba(22, 16, 11, 0.96);
+}
+
+/* Чуть затемняем шапку и виджет погоды, чтобы они не слепили ночью */
+body.dark-theme .header-inner {
+  background: rgba(22, 16, 11, 0.85);
+  border-color: rgba(181, 156, 122, 0.2);
+}
+body.dark-theme .header-weather {
+  background: rgba(40, 30, 22, 0.6);
+  color: #b59c7a;
+}

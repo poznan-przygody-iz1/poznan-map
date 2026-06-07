@@ -52,7 +52,7 @@ const map = L.map('map', {
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
   subdomains: 'abcd',
   maxZoom: 20
@@ -417,6 +417,38 @@ async function fetchWeather() {
 fetchWeather();
 // И заставляем сайт обновлять её каждый час (3600000 миллисекунд)
 setInterval(fetchWeather, 3600000);
+
+/* ── DARK THEME LOGIC ────────────────────────────────────── */
+const themeToggleBtn = document.getElementById('theme-toggle');
+
+// Проверяем память браузера: если пользователь уже включал ночь, оставляем её
+if (localStorage.getItem('theme') === 'dark') {
+  enableDarkMode();
+}
+
+themeToggleBtn.addEventListener('click', () => {
+  if (document.body.classList.contains('dark-theme')) {
+    disableDarkMode();
+  } else {
+    enableDarkMode();
+  }
+});
+
+function enableDarkMode() {
+  document.body.classList.add('dark-theme');
+  themeToggleBtn.textContent = '☀️';
+  // Магия: меняем светлую карту на специальную ночную (dark_all)
+  tileLayer.setUrl('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png');
+  localStorage.setItem('theme', 'dark'); // Сохраняем в память
+}
+
+function disableDarkMode() {
+  document.body.classList.remove('dark-theme');
+  themeToggleBtn.textContent = '🌙';
+  // Возвращаем светлую карту (voyager)
+  tileLayer.setUrl('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png');
+  localStorage.setItem('theme', 'light'); // Сохраняем в память
+}
 
 /* ── INIT ────────────────────────────────────────────────── */
 loadData();
