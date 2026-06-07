@@ -245,7 +245,7 @@ function openModal(loc) {
           box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;
         " onmouseover="this.style.backgroundColor='#3e523b'; this.style.transform='translateY(-2px)';" 
            onmouseout="this.style.backgroundColor='#53694f'; this.style.transform='translateY(0)';">
-          📖 Przewodnik (PDF)
+        📖 Przewodnik (PDF)
         </a>
       ` : ''}
       <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" style="
