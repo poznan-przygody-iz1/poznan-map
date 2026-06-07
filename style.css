@@ -123,31 +123,59 @@ html, body {
   margin-top: 4px;
 }
 
-/* ── WEATHER WIDGET ─────────────────────────────────────── */
-.header-weather {
+/* ── ВЕРХНЯЯ ПАНЕЛЬ ПОГОДЫ ──────────────────────────────── */
+.top-weather-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 32px;
+  background: rgba(26, 17, 8, 0.95); /* Темно-кофейный фон */
+  color: #e8b84b; /* Золотой цвет */
+  z-index: 3000;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin-top: 8px; /* Отступ от слогана */
   font-family: var(--ff-body);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--clr-sepia);
-  background: rgba(255, 255, 255, 0.6);
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(122, 92, 56, 0.15);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(20, 12, 4, 0.05);
-  transition: all var(--dur-fast);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  transition: background 0.3s;
 }
-.header-weather:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-1px);
+.weather-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-#weather-icon {
-  font-size: 15px; /* Иконка чуть крупнее текста */
+.weather-divider { color: rgba(255,255,255,0.2); }
+#weather-desc { color: #f5efe3; }
+#weather-wind { color: #a07850; }
+
+/* Для темной темы верхняя полоска становится черной */
+body.dark-theme .top-weather-bar { background: #0a0705; }
+
+/* ── ИСПРАВЛЕННОЕ ПОЗИЦИОНИРОВАНИЕ КНОПОК ───────────────── */
+/* Опускаем шапку чуть ниже, чтобы она не пряталась под погодой */
+.app-header {
+  top: 32px !important; 
 }
+
+.header-controls {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Идеальное расстояние между луной и меню */
+}
+
+/* Сбрасываем старые абсолютные координаты кнопок, теперь ими управляет flex */
+.theme-toggle, .menu-toggle {
+  position: relative !important;
+  right: auto !important; 
+  top: auto !important; 
+  transform: none !important;
+}
+.theme-toggle:hover { transform: scale(1.15) !important; }
 
 /* ── CUSTOM MARKER ───────────────────────────────────────── */
 .custom-pin {

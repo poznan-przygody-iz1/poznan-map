@@ -380,42 +380,46 @@ function initSearch(locations) {
   });
 }
 
-/* ── LIVE WEATHER WIDGET ─────────────────────────────────── */
+/* ── PRO LIVE WEATHER WIDGET ─────────────────────────────── */
 async function fetchWeather() {
   const tempEl = document.getElementById('weather-temp');
   const iconEl = document.getElementById('weather-icon');
+  const descEl = document.getElementById('weather-desc');
+  const windEl = document.getElementById('weather-wind');
+  
   if (!tempEl || !iconEl) return;
 
   try {
-    // Делаем запрос к бесплатной погодной станции для координат Познани
     const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.4064&longitude=16.9252&current_weather=true');
     const data = await res.json();
     const w = data.current_weather;
 
-    // Округляем температуру (например, 14.3 превратится в 14)
     tempEl.textContent = Math.round(w.temperature) + '°C';
+    windEl.textContent = `💨 ${Math.round(w.windspeed)} km/h`;
 
-    // Подбираем красивую эмодзи-иконку по коду погоды от метеорологов
     let icon = '🌤️';
-    if (w.weathercode === 0) icon = '☀️'; // Ясно
-    else if (w.weathercode > 0 && w.weathercode <= 3) icon = '⛅'; // Переменная облачность
-    else if (w.weathercode === 45 || w.weathercode === 48) icon = '🌫️'; // Туман
-    else if (w.weathercode >= 51 && w.weathercode <= 67) icon = '🌧️'; // Дождь
-    else if (w.weathercode >= 71 && w.weathercode <= 77) icon = '❄️'; // Снег
-    else if (w.weathercode >= 80 && w.weathercode <= 82) icon = '🌦️'; // Ливень
-    else if (w.weathercode >= 95) icon = '⛈️'; // Гроза
+    let desc = 'Słonecznie';
+    
+    if (w.weathercode === 0) { icon = '☀️'; desc = 'Bezchmurnie'; }
+    else if (w.weathercode > 0 && w.weathercode <= 3) { icon = '⛅'; desc = 'Zachmurzenie'; }
+    else if (w.weathercode === 45 || w.weathercode === 48) { icon = '🌫️'; desc = 'Mgła'; }
+    else if (w.weathercode >= 51 && w.weathercode <= 67) { icon = '🌧️'; desc = 'Deszcz'; }
+    else if (w.weathercode >= 71 && w.weathercode <= 77) { icon = '❄️'; desc = 'Śnieg'; }
+    else if (w.weathercode >= 80 && w.weathercode <= 82) { icon = '🌦️'; desc = 'Przelotne opady'; }
+    else if (w.weathercode >= 95) { icon = '⛈️'; desc = 'Burza'; }
 
     iconEl.textContent = icon;
+    descEl.textContent = desc;
   } catch (err) {
-    console.error('Ошибка загрузки погоды:', err);
-    tempEl.textContent = 'Poznań'; // Если пропал интернет, просто пишем город
-    iconEl.textContent = '☁️';
+    console.error('Błąd pogody:', err);
+    tempEl.textContent = 'Poznań';
+    descEl.textContent = 'Brak danych';
+    windEl.textContent = '';
   }
 }
 
-// Запускаем погоду сразу при открытии сайта
+// Запускаем погоду
 fetchWeather();
-// И заставляем сайт обновлять её каждый час (3600000 миллисекунд)
 setInterval(fetchWeather, 3600000);
 
 /* ── DARK THEME LOGIC ────────────────────────────────────── */

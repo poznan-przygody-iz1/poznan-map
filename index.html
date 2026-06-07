@@ -21,6 +21,20 @@
 
 <!-- ── HEADER ─────────────────────────────────────────── -->
   <header class="app-header">
+    <!-- ── ВЕРХНЯЯ ИНФО-ПАНЕЛЬ ПОГОДЫ ── -->
+  <div class="top-weather-bar" id="top-weather-bar">
+    <div class="weather-bar-inner">
+      <span id="weather-icon">⏳</span>
+      <span id="weather-temp">Ładowanie...</span>
+      <span class="weather-divider">|</span>
+      <span id="weather-desc">Sprawdzam niebo...</span>
+      <span class="weather-divider">|</span>
+      <span id="weather-wind">💨 -- km/h</span>
+    </div>
+  </div>
+
+  <!-- ── ОСНОВНАЯ ШАПКА С ЛОГОТИПОМ ── -->
+  <header class="app-header">
     <div class="header-inner">
       
       <div class="header-titles">
@@ -28,22 +42,17 @@
           <span class="logo-poz">POZ</span><span class="logo-nan">NAN</span>
         </div>
         <p class="header-tagline">Miasto Przygód</p>
-        
-        <div class="header-weather" id="weather-widget">
-          <span id="weather-icon">⏳</span>
-          <span id="weather-temp">...</span>
-        </div>
       </div>
 
-  <!-- НОВАЯ КНОПКА ТЕМНОЙ ТЕМЫ -->
-      <button id="theme-toggle" class="theme-toggle" aria-label="Zmień motyw">🌙</button>
-
-      <!-- Твоя старая кнопка меню -->
-      <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </button>
+      <!-- Блок кнопок (Они теперь в одном ряду и никогда не наложатся) -->
+      <div class="header-controls">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Zmień motyw">🌙</button>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
 
     </div>
   </header>
