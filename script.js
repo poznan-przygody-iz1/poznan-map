@@ -454,5 +454,11 @@ function disableDarkMode() {
   localStorage.setItem('theme', 'light'); // Сохраняем в память
 }
 
+// Когда открываешь меню (внутри функции openSidebar или в обработчике):
+document.body.classList.add('menu-is-open');
+
+// Когда закрываешь меню (внутри функции closeSidebar или в обработчике):
+document.body.classList.remove('menu-is-open');
+
 /* ── INIT ────────────────────────────────────────────────── */
 loadData();

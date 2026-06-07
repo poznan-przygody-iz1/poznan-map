@@ -421,3 +421,7 @@ body.dark-theme .top-weather-bar { background: #0a0705; }
     display: none !important;
   }
 }
+
+body.menu-is-open .app-header {
+  display: none !important;
+}
