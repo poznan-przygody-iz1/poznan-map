@@ -74,9 +74,12 @@
     "lng": 16.91784,
     "description": "Filharmonia Poznańska im. Tadeusza Szeligowskiego to jeden z czołowych ośrodków muzycznych w Polsce. Klasycystyczny gmach z 1910 roku mieści dwie sale koncertowe — Wielką na ponad 900 miejsc i Kameralną. Rezyduje tu Orkiestra Filharmonii Poznańskiej oraz Chór Filharmonii, znane ze świetnych nagrań i sukcesów na konkursach międzynarodowych.",
     "images": [
-      "https://placehold.co/800x500/7a5c38/e8b84b?text=Filharmonia+Poznańska",
-      "https://placehold.co/800x500/1a1108/f5efe3?text=Filharmonia+%E2%80%94+Sala",
-      "https://placehold.co/800x500/c0392b/fdf7ee?text=Filharmonia+%E2%80%94+Koncert"
+      "bazylika/bazylika_1.jpg",
+      "bazylika/bazylika_2.jpg",
+      "bazylika/bazylika_3.jpg",
+      "bazylika/bazylika_4.jpg",
+      "bazylika/bazylika_5.jpg",
+      "bazylika/bazylika_6.jpg",
     ]
   },
   {
