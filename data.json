@@ -6,6 +6,7 @@
     "lat": 52.40854,
     "lng": 16.93421,
     "description": "Renesansowy ratusz na Starym Rynku to jeden z najpiękniejszych przykładów architektury renesansowej w Polsce. Wzniesiony w XVI wieku przez włoskiego architekta Jana Baptystę Quadro, zachwyca loggią arkadową i wysoką attyką. Każdego południa w samo południe z wieżowej wieżyczki wybiega para mechanicznych koziołków, które trzykrotnie trykają się rogami – symbol Poznania znany na całą Polskę.",
+    "pdf": "ratusz.pdf",
     "images": [
       "https://placehold.co/800x500/7a5c38/f5efe3?text=Ratusz+Poznań",
       "https://placehold.co/800x500/c8813a/1a1108?text=Ratusz+%E2%80%94+Detale",
@@ -58,6 +59,7 @@
     "lat": 52.40792,
     "lng": 16.91879,
     "description": "Centrum Kultury Zamek mieści się w dawnym Zamku Cesarskim, wzniesionym przez Niemców na początku XX wieku jako symbol władzy pruskiej. Dziś jest to jeden z najważniejszych ośrodków kulturalnych Poznania — goszczący teatr, kino, galerie sztuki, klub muzyczny i przestrzenie wystawowe. Architektura neoromańska budynku robi ogromne wrażenie.",
+    "pdf": "centrum-kultury-zamek.pdf",
     "images": [
       "https://placehold.co/800x500/1a1108/c8813a?text=Centrum+Kultury+Zamek",
       "https://placehold.co/800x500/7a5c38/f5efe3?text=CK+Zamek+%E2%80%94+Sala",
