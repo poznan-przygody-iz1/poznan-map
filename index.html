@@ -45,12 +45,17 @@
     <div class="weather-bar-inner">
       <span class="weather-city">Poznań</span>
       <span class="weather-divider" aria-hidden="true">·</span>
-      <span id="weather-icon" aria-hidden="true">⏳</span>
+      <span id="weather-icon" class="is-loading" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+        </svg>
+      </span>
       <span id="weather-temp">Ładowanie…</span>
       <span class="weather-divider" aria-hidden="true">|</span>
       <span id="weather-desc">Sprawdzam niebo…</span>
       <span class="weather-divider weather-divider-wind" aria-hidden="true">|</span>
-      <span id="weather-wind">💨 -- km/h</span>
+      <span id="weather-wind"></span>
     </div>
   </div>
 
@@ -188,9 +193,6 @@
           </a>
           <a id="modal-pdf" class="modal-btn modal-btn-pdf" target="_blank" rel="noopener" hidden>
             <span class="modal-btn-icon" aria-hidden="true">📖</span> Przewodnik (PDF)
-          </a>
-          <a id="modal-amaps" class="modal-btn modal-btn-amaps" target="_blank" rel="noopener">
-            <span class="modal-btn-icon" aria-hidden="true">📱</span> Apple Maps
           </a>
         </div>
 

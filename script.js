@@ -72,7 +72,6 @@ const dom = {
   coords:        $('#modal-coords'),
   pdfLink:       $('#modal-pdf'),
   gmapsLink:     $('#modal-gmaps'),
-  amapsLink:     $('#modal-amaps'),
   swiperWrap:    $('#swiper-wrapper'),
   galCurrent:    $('#gallery-current'),
   galTotal:      $('#gallery-total'),
@@ -152,14 +151,12 @@ const map = L.map('map', {
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 L.control.attribution({ position: 'bottomleft', prefix: false }).addTo(map);
 
-/* Kafle: jasny (voyager) / ciemny (dark_all) */
-const TILE_LIGHT = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-const TILE_DARK  = 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png';
-
-const tileLayer = L.tileLayer(TILE_LIGHT, {
-  subdomains: 'abcd',
-  maxZoom: 20,
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+/* Kafelki OpenStreetMap – działają bez klucza API.
+   Ciemny motyw realizowany jest w CSS (filter na .leaflet-tile). */
+const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  subdomains: 'abc',
+  maxZoom: 19,
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
 const markerGroup = L.layerGroup().addTo(map);
@@ -578,10 +575,12 @@ function openModal(id) {
   dom.category.style.borderColor = hexToRgba(color, 0.35);
 
   /* akcje */
-  dom.pdfLink.hidden = !loc.pdf;
-  dom.pdfLink.href = loc.pdf || '#';
+  const hasPdf = Boolean(loc.pdf);
+  dom.pdfLink.hidden = !hasPdf;
+  dom.pdfLink.href = hasPdf ? loc.pdf : '#';
   dom.gmapsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
-  dom.amapsLink.href = `https://maps.apple.com/?daddr=${loc.lat},${loc.lng}`;
+  /* gdy brak PDF, przycisk trasy zajmuje cały rząd */
+  dom.gmapsLink.classList.toggle('modal-btn-wide', !hasPdf);
 
   buildGallery(loc);
   syncModalFav();
@@ -749,22 +748,52 @@ document.addEventListener('keydown', (e) => {
 
 /* ── POGODA (OPEN-METEO) ─────────────────────────────────── */
 
+/* Nowoczesne ikonki SVG – cienka linia, stroke = currentColor (złoto). */
+const weatherSvg = (paths) =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+
+const WEATHER_ICONS = {
+  clear:   weatherSvg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>'),
+  partly:  weatherSvg('<circle cx="17.5" cy="6.5" r="2.5"/><path d="M17.5 2.2v1M21.8 6.5h-1M20.7 3.4l-.9.9"/><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>'),
+  cloud:   weatherSvg('<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>'),
+  fog:     weatherSvg('<path d="M18 8h-1.26A8 8 0 1 0 9 18h9a5 5 0 0 0 0-10z"/><path d="M4 21h12M7 18h9"/>'),
+  rain:    weatherSvg('<path d="M16 13v2M8 13v2M12 15v2"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>'),
+  snow:    weatherSvg('<path d="M20 15.58A5 5 0 0 0 18 6h-1.26A8 8 0 1 0 4 14.25"/><path d="M8 19h.01M12 21h.01M16 19h.01M10 17h.01M14 17h.01"/>'),
+  thunder: weatherSvg('<path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/><path d="m13 11-3 5h4l-3 5"/>'),
+  wind:    weatherSvg('<path d="M9.59 4.59A2 2 0 1 1 11 8H2"/><path d="M17.73 7.73A2.5 2.5 0 1 1 19.5 12H2"/><path d="M12.59 19.41A2 2 0 1 0 14 16H2"/>'),
+};
+
+function weatherIconFor(code) {
+  if (code === 0)  return 'clear';
+  if (code === 1)  return 'partly';
+  if (code <= 3)   return 'cloud';
+  if (code === 45 || code === 48) return 'fog';
+  if (code <= 77)  return 'snow'; /* 71–77: śnieg */
+  if (code <= 94)  return 'rain'; /* 51–67, 80–82, 85–94: deszcz */
+  return 'thunder';              /* 95+: burza */
+}
+
 function describeWeather(code) {
-  if (code === 0) return ['☀️', 'Bezchmurnie'];
-  if (code <= 3) return ['⛅', 'Zachmurzenie'];
-  if (code === 45 || code === 48) return ['🌫️', 'Mgła'];
-  if (code <= 67) return ['🌧️', 'Deszcz'];
-  if (code <= 77) return ['❄️', 'Śnieg'];
-  if (code <= 82) return ['🌦️', 'Przelotne opady'];
-  if (code <= 99) return ['⛈️', 'Burza'];
-  return ['🌤️', 'Zmienna pogoda'];
+  if (code === 0)  return 'Bezchmurnie';
+  if (code === 1)  return 'Częściowe zachmurzenie';
+  if (code <= 3)   return 'Zachmurzenie';
+  if (code === 45 || code === 48) return 'Mgła';
+  if (code <= 67)  return 'Deszcz';
+  if (code <= 77)  return 'Śnieg';
+  if (code <= 94)  return 'Przelotne opady';
+  return 'Burza';
+}
+
+function setWeatherIcon(key) {
+  dom.weatherIcon.classList.remove('is-loading');
+  dom.weatherIcon.innerHTML = WEATHER_ICONS[key] || WEATHER_ICONS.cloud;
 }
 
 function showWeatherFallback() {
-  dom.weatherIcon.textContent = '🌆';
+  setWeatherIcon('cloud');
   dom.weatherTemp.textContent = 'Poznań';
   dom.weatherDesc.textContent = 'pogoda niedostępna';
-  dom.weatherWind.textContent = '';
+  dom.weatherWind.innerHTML = WEATHER_ICONS.wind + ' –';
 }
 
 async function fetchWeather() {
@@ -780,10 +809,9 @@ async function fetchWeather() {
     const w = data.current_weather;
 
     dom.weatherTemp.textContent = `${Math.round(w.temperature)}°C`;
-    dom.weatherWind.textContent = `💨 ${Math.round(w.windspeed)} km/h`;
-    const [icon, desc] = describeWeather(w.weathercode);
-    dom.weatherIcon.textContent = icon;
-    dom.weatherDesc.textContent = desc;
+    dom.weatherWind.innerHTML = WEATHER_ICONS.wind + ` ${Math.round(w.windspeed)} km/h`;
+    setWeatherIcon(weatherIconFor(w.weathercode));
+    dom.weatherDesc.textContent = describeWeather(w.weathercode);
   } catch (err) {
     console.error('Błąd pogody:', err);
     showWeatherFallback();
@@ -803,7 +831,6 @@ function applyTheme(theme) {
   document.body.classList.toggle('dark-theme', dark);
   dom.themeToggle.textContent = dark ? '☀️' : '🌙';
   dom.themeToggle.setAttribute('aria-label', dark ? 'Włącz jasny motyw' : 'Włącz ciemny motyw');
-  tileLayer.setUrl(dark ? TILE_DARK : TILE_LIGHT);
   try { localStorage.setItem(THEME_KEY, theme); } catch { /* prywatny tryb */ }
 }
 

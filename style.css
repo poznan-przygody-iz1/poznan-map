@@ -128,10 +128,14 @@ img    { max-width: 100%; }
   text-transform: uppercase;
 }
 .weather-divider { color: rgba(255, 255, 255, .18); }
-#weather-icon { font-size: 14px; }
+#weather-icon { display: inline-flex; color: var(--clr-gold); }
+#weather-icon svg { width: 18px; height: 18px; display: block; }
+#weather-icon.is-loading { animation: weatherPulse 1.8s ease-in-out infinite; }
+@keyframes weatherPulse { 0%, 100% { opacity: .35; } 50% { opacity: .85; } }
 #weather-temp { color: #f5efe3; font-weight: 500; }
 #weather-desc { color: #cbb59a; }
-#weather-wind { color: #a07850; }
+#weather-wind { color: #a07850; display: inline-flex; align-items: center; gap: 5px; }
+#weather-wind svg { width: 13px; height: 13px; display: block; }
 @media (max-width: 480px) {
   .weather-divider-wind, #weather-wind { display: none; }
 }
@@ -239,6 +243,11 @@ body.sidebar-open .app-header { opacity: 0; transform: translateY(-8px); }
   box-shadow: var(--shadow-2) !important;
 }
 .leaflet-tooltip-top::before { border-top-color: rgba(122, 92, 56, .25) !important; }
+
+/* Ciemny motyw: te same kafelki OSM, „przygaszone" przez CSS-filter */
+body.dark-theme #map .leaflet-tile {
+  filter: invert(1) hue-rotate(200deg) brightness(.88) contrast(.9) saturate(.4);
+}
 
 /* ── 7. SZEPKI (PINY) ──────────────────────────────────────── */
 .custom-pin {
@@ -734,7 +743,6 @@ body.sidebar-open .app-header { opacity: 0; transform: translateY(-8px); }
 .modal-btn-wide { grid-column: 1 / -1; }
 .modal-btn-pdf   { background: #53694f; }
 .modal-btn-gmaps { background: #1a73e8; }
-.modal-btn-amaps { background: var(--clr-ink); }
 .modal-btn-icon { font-size: 16px; }
 
 .modal-coords {
@@ -859,7 +867,6 @@ body.dark-theme .leaflet-control-zoom a { background: #231a13 !important; }
 body.dark-theme .leaflet-control-zoom a:hover { background: #2c2118 !important; }
 body.dark-theme .leaflet-control-attribution { background: rgba(35, 26, 19, .85) !important; }
 body.dark-theme .route-btn-gmaps { background: #232a33; color: #7fb3ff; border-color: rgba(127, 179, 255, .35); }
-body.dark-theme .modal-btn-amaps { background: #3a2e20; border: 1px solid rgba(232, 184, 75, .35); }
 body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
 
 /* ── 14. RESPONSYWNOŚĆ ───────────────────────────────────── */
