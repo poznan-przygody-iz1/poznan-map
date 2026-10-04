@@ -2,124 +2,218 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Poznań - Miasto Przygód</title>
-  
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Special+Elite&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <title>Poznań — Miasto Przygód · Interaktywny przewodnik</title>
+  <meta name="description" content="Interaktywna mapa Poznania: zabytki, kultura, natura i ukryte zakątki. Filtruj miejsca, zbuduj własną trasę, zapisz ulubione lokalizacje i pobierz przewodniki PDF." />
+
+  <meta name="theme-color" content="#1a1108" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+
+  <meta property="og:title" content="Poznań — Miasto Przygód" />
+  <meta property="og:description" content="Interaktywny przewodnik po Poznaniu: mapa, kategorie, własna trasa i przewodniki PDF." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="icons/icon-512.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=final-buttons" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Poznań — Miasto Przygód",
+    "applicationCategory": "TravelApplication",
+    "operatingSystem": "Web (HTML5, CSS3, JavaScript)",
+    "inLanguage": "pl",
+    "description": "Interaktywny przewodnik po Poznaniu z mapą, kategoriami, własną trasą i przewodnikami PDF."
+  }
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#sidebar">Przejdź do menu</a>
 
-  <div class="top-weather-bar" id="top-weather-bar">
+  <!-- ── PASEK POGODY ─────────────────────────────────────── -->
+  <div class="top-weather-bar" role="status" aria-label="Pogoda w Poznaniu">
     <div class="weather-bar-inner">
-      <span id="weather-icon">⏳</span>
-      <span id="weather-temp">Ładowanie...</span>
-      <span class="weather-divider">|</span>
-      <span id="weather-desc">Sprawdzam niebo...</span>
-      <span class="weather-divider">|</span>
+      <span class="weather-city">Poznań</span>
+      <span class="weather-divider" aria-hidden="true">·</span>
+      <span id="weather-icon" aria-hidden="true">⏳</span>
+      <span id="weather-temp">Ładowanie…</span>
+      <span class="weather-divider" aria-hidden="true">|</span>
+      <span id="weather-desc">Sprawdzam niebo…</span>
+      <span class="weather-divider weather-divider-wind" aria-hidden="true">|</span>
       <span id="weather-wind">💨 -- km/h</span>
     </div>
   </div>
 
+  <!-- ── NAGŁÓWEK ─────────────────────────────────────────── -->
   <header class="app-header">
     <div class="header-inner">
-      
-      <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+      <button class="icon-btn menu-toggle" id="menu-toggle" type="button"
+              aria-label="Otwórz menu" aria-controls="sidebar" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
         </svg>
       </button>
 
       <div class="header-titles">
-        <div class="header-logo">
-          <span class="logo-poz">POZ</span><span class="logo-nan">NAN</span>
-        </div>
+        <div class="header-logo"><span class="logo-poz">POZ</span><span class="logo-nan">NAN</span></div>
         <p class="header-tagline">Miasto Przygód</p>
       </div>
 
-      <button id="theme-toggle" class="theme-toggle" aria-label="Zmień motyw">🌙</button>
-
+      <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Zmień motyw">🌙</button>
     </div>
   </header>
 
-  <!-- ── SIDEBAR MENU ───────────────────────────────────── -->
-  <aside class="sidebar" id="sidebar">
+  <!-- ── SIDEBAR / MENU ───────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar" aria-label="Menu przewodnika">
     <div class="sidebar-header">
-      <h2>Kategorie</h2>
-      <button class="sidebar-close" id="sidebar-close" aria-label="Zamknij">&times;</button>
-    </div>
-    
-    <div class="sidebar-search">
-      <input type="text" id="search-input" placeholder="Szukaj miejsca (np. Ratusz)..." autocomplete="off" />
-      <div id="search-results" class="search-results"></div>
-    </div>
-    
-    <div class="sidebar-content" id="sidebar-categories">
+      <div class="sidebar-heading">
+        <h2 class="sidebar-title">Kategorie</h2>
+        <p class="sidebar-subtitle">Interaktywny przewodnik po Poznaniu</p>
       </div>
+      <button class="icon-btn sidebar-close" id="sidebar-close" type="button" aria-label="Zamknij menu">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="2" y1="2" x2="16" y2="16" />
+          <line x1="16" y1="2" x2="2" y2="16" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-search">
+      <label class="sr-only" for="search-input">Szukaj miejsca</label>
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.5" y2="16.5" />
+        </svg>
+        <input type="text" id="search-input" placeholder="Szukaj miejsca (np. Ratusz)…" autocomplete="off" />
+      </div>
+      <div id="search-results" class="search-results" role="listbox" aria-label="Wyniki wyszukiwania"></div>
+    </div>
+
+    <div class="sidebar-scroll">
+      <!-- Moja trasa: ulubione + nawigacja -->
+      <section class="route-card" id="route-card" hidden>
+        <div class="route-card-head">
+          <span class="route-card-emoji" aria-hidden="true">🧭</span>
+          <div class="route-card-heading">
+            <h3 class="route-card-title">Moja trasa</h3>
+            <p class="route-card-sub" id="route-count">0 miejsc</p>
+          </div>
+        </div>
+        <ol class="route-steps" id="route-steps"></ol>
+        <div class="route-actions">
+          <button class="route-btn route-btn-map" id="route-map-btn" type="button">Pokaż trasę na mapie</button>
+          <a class="route-btn route-btn-gmaps" id="route-gmaps-link" target="_blank" rel="noopener">Otwórz w Google Maps</a>
+        </div>
+      </section>
+
+      <section class="cat-section" aria-label="Kategorie">
+        <h3 class="section-title">Filtry</h3>
+        <div id="sidebar-categories" class="cat-chips"></div>
+      </section>
+
+      <section class="list-section" aria-label="Lista miejsc">
+        <h3 class="section-title"><span id="list-count"></span></h3>
+        <div id="place-list" class="place-list"></div>
+      </section>
+    </div>
+
+    <div class="sidebar-footer">Poznań · Miasto Przygód · dane © OpenStreetMap</div>
   </aside>
 
-  <!-- ── MAP CONTAINER ──────────────────────────────────── -->
-  <div id="map"></div>
+  <!-- ── MAPA ─────────────────────────────────────────────── -->
+  <div id="map" aria-label="Mapa Poznania z punktami przewodnika"></div>
 
-  <!-- ── MODAL OVERLAY ──────────────────────────────────── -->
-  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <!-- ── MODAL: SZCZEGÓŁY MIEJSCA ─────────────────────────── -->
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true"
+       aria-labelledby="modal-title">
     <div class="modal-panel" id="modal-panel">
-      <button class="modal-close" id="modal-close" aria-label="Zamknij">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <line x1="1" y1="1" x2="17" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="17" y1="1" x2="1" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <div class="modal-handle" aria-hidden="true"></div>
+
+      <button class="icon-btn modal-close" id="modal-close" type="button" aria-label="Zamknij szczegóły">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="2" y1="2" x2="16" y2="16" />
+          <line x1="16" y1="2" x2="2" y2="16" />
         </svg>
       </button>
 
-      <!-- Gallery -->
+      <button class="fav-btn" id="modal-fav" type="button" aria-pressed="false" aria-label="Dodaj do trasy">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      </button>
+
       <div class="modal-gallery">
         <div class="swiper modal-swiper">
           <div class="swiper-wrapper" id="swiper-wrapper"></div>
           <div class="swiper-pagination"></div>
-          <div class="swiper-button-prev"></div>
-          <div class="swiper-button-next"></div>
+          <div class="swiper-button-prev" role="button" aria-label="Poprzednie zdjęcie"></div>
+          <div class="swiper-button-next" role="button" aria-label="Następne zdjęcie"></div>
         </div>
         <div class="modal-gallery-counter">
-          <span id="gallery-current">1</span> / <span id="gallery-total">1</span>
+          <span id="gallery-current">1</span>&thinsp;/&thinsp;<span id="gallery-total">1</span>
         </div>
       </div>
 
-      <!-- Content -->
       <div class="modal-content">
         <div class="modal-meta">
           <span class="modal-category" id="modal-category"></span>
+          <span class="modal-address" id="modal-address"></span>
         </div>
+
         <h2 class="modal-title" id="modal-title"></h2>
-        <div class="modal-divider"></div>
+        <div class="modal-divider" aria-hidden="true"></div>
         <p class="modal-description" id="modal-description"></p>
-        <div class="modal-coords" id="modal-coords"></div>
+
+        <div class="modal-actions">
+          <a id="modal-gmaps" class="modal-btn modal-btn-wide modal-btn-gmaps" target="_blank" rel="noopener">
+            <span class="modal-btn-icon" aria-hidden="true">🗺️</span> Jak dojechać?
+          </a>
+          <a id="modal-pdf" class="modal-btn modal-btn-pdf" target="_blank" rel="noopener" hidden>
+            <span class="modal-btn-icon" aria-hidden="true">📖</span> Przewodnik (PDF)
+          </a>
+          <a id="modal-amaps" class="modal-btn modal-btn-amaps" target="_blank" rel="noopener">
+            <span class="modal-btn-icon" aria-hidden="true">📱</span> Apple Maps
+          </a>
+        </div>
+
+        <p class="modal-coords" id="modal-coords"></p>
       </div>
     </div>
   </div>
 
-  <!-- ── LOADING SCREEN ─────────────────────────────────── -->
+  <!-- ── TOAST ────────────────────────────────────────────── -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- ── EKRAN ŁADOWANIA ──────────────────────────────────── -->
   <div id="loading-screen" class="loading-screen">
     <div class="loading-inner">
-      <div class="loading-logo">
-        <span class="logo-poz">POZ</span><span class="logo-nan">NAN</span>
-      </div>
-      <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+      <div class="loading-logo"><span class="logo-poz">POZ</span><span class="logo-nan">NAN</span></div>
+      <div class="loading-bar" aria-hidden="true"><div class="loading-bar-fill"></div></div>
       <p class="loading-text">Ładowanie mapy…</p>
     </div>
   </div>
 
-  <!-- ── SCRIPTS ────────────────────────────────────────── -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script src="script.js?v=2"></script>
+  <script src="script.js"></script>
+
 </body>
 </html>

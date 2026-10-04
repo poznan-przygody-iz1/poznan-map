@@ -1,464 +1,867 @@
-/* ═══════════════════════════════════════════════════════
-   Poznań — Miasto Przygód  |  script.js (Map + Sidebar + Geo)
-   ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   POZNAŃ — MIASTO PRZYGÓD
+   Interaktywny przewodnik: mapa, kategorie, lista miejsc,
+   własna trasa (ulubione), pogoda, ciemny motyw.
+   ═══════════════════════════════════════════════════════════ */
 
 'use strict';
 
-/* ── CONFIG ─────────────────────────────────────────────── */
-const DATA_URL = 'data.json?v=' + Date.now();
+/* ── KONFIGURACJA ──────────────────────────────────────────── */
 
-/* ── CATEGORY COLOUR MAP ─────────────────────────────────── */
+const DATA_URL   = 'data.json';
+const STORE_KEY  = 'poznan.favorites'; // uporządkowana lista id (kolejność trasy)
+const THEME_KEY  = 'poznan.theme';     // 'light' | 'dark'
+const HINT_KEY   = 'poznan.hint-shown';
+
 const CATEGORY_COLORS = {
-  'Architektura':      '#c8813a',
-  'Przestrzeń Miejska':'#7a5c38',
-  'Sakralne':          '#c0392b',
-  'Zabytki':           '#6d4c41',
-  'Kultura':           '#5d6d3a',
-  'Muzyka':            '#9b59b6',
-  'Teatr & Opera':     '#8e44ad',
-  'Przyroda':          '#3a7a5c',
-  'Nauka':             '#2980b9',
-  'Historia':          '#a07850',
+  'Architektura':       '#c8813a',
+  'Przestrzeń Miejska': '#7a5c38',
+  'Sakralne':           '#c0392b',
+  'Zabytki':            '#6d4c41',
+  'Kultura':            '#5d6d3a',
+  'Muzyka':             '#9b59b6',
+  'Teatr & Opera':      '#8e44ad',
+  'Przyroda':           '#3a7a5c',
+  'Nauka':              '#2980b9',
+  'Historia':           '#a07850',
+};
+const DEFAULT_COLOR = '#c8813a';
+const colorOf = (category) => CATEGORY_COLORS[category] || DEFAULT_COLOR;
+
+/* ── STAN GLOBALNY ─────────────────────────────────────────── */
+
+const state = {
+  locations: [],
+  markers: new Map(),      // id -> L.Marker
+  activeCategory: 'all',
+  favorites: loadFavorites(),
+  userMarker: null,
+  routeLayer: null,
+  swiper: null,
+  currentId: null,
+  dataReady: false,
 };
 
-function getCategoryColor(category) {
-  return CATEGORY_COLORS[category] || '#c8813a';
+/* ── POMOCNICY DOM ─────────────────────────────────────────── */
+
+const $  = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+const dom = {
+  sidebar:       $('#sidebar'),
+  menuToggle:    $('#menu-toggle'),
+  sidebarClose:  $('#sidebar-close'),
+  searchInput:   $('#search-input'),
+  searchResults: $('#search-results'),
+  catChips:      $('#sidebar-categories'),
+  placeList:     $('#place-list'),
+  listCount:     $('#list-count'),
+  routeCard:     $('#route-card'),
+  routeCount:    $('#route-count'),
+  routeSteps:    $('#route-steps'),
+  routeMapBtn:   $('#route-map-btn'),
+  routeGmaps:    $('#route-gmaps-link'),
+  overlay:       $('#modal-overlay'),
+  panel:         $('#modal-panel'),
+  modalClose:    $('#modal-close'),
+  modalFav:      $('#modal-fav'),
+  title:         $('#modal-title'),
+  category:      $('#modal-category'),
+  address:       $('#modal-address'),
+  description:   $('#modal-description'),
+  coords:        $('#modal-coords'),
+  pdfLink:       $('#modal-pdf'),
+  gmapsLink:     $('#modal-gmaps'),
+  amapsLink:     $('#modal-amaps'),
+  swiperWrap:    $('#swiper-wrapper'),
+  galCurrent:    $('#gallery-current'),
+  galTotal:      $('#gallery-total'),
+  loadScreen:    $('#loading-screen'),
+  toast:         $('#toast'),
+  themeToggle:   $('#theme-toggle'),
+  weatherIcon:   $('#weather-icon'),
+  weatherTemp:   $('#weather-temp'),
+  weatherDesc:   $('#weather-desc'),
+  weatherWind:   $('#weather-wind'),
+};
+
+/* ── UTILS ─────────────────────────────────────────────────── */
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
 }
 
-/* ── SVG PIN FACTORY ─────────────────────────────────────── */
-function createPinSVG(color = '#c8813a') {
-  return `
-<svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48">
-  <defs>
-    <filter id="shadow-${color.slice(1)}" x="-30%" y="-10%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(20,12,4,.45)"/>
-    </filter>
-  </defs>
-  <path class="pin-body" d="M18 2C10.27 2 4 8.27 4 16c0 11 14 29.5 14 29.5S32 27 32 16C32 8.27 25.73 2 18 2Z" fill="${color}" filter="url(#shadow-${color.slice(1)})"/>
-  <circle cx="18" cy="16" r="7" fill="rgba(255,255,255,0.22)" class="pin-icon"/>
-  <circle cx="18" cy="16" r="4.5" fill="rgba(255,255,255,0.75)" class="pin-icon"/>
-</svg>`.trim();
+function hexToRgba(hex, alpha) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-/* ── MAP INIT ────────────────────────────────────────────── */
+function byId(id) {
+  return state.locations.find((loc) => loc.id === id);
+}
+
+/* ── ULUBIONE (localStorage) ───────────────────────────────── */
+
+function loadFavorites() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+    return Array.isArray(raw) ? raw.filter((x) => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFavorites() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state.favorites)); } catch { /* prywatny tryb */ }
+}
+
+function favoriteLocations() {
+  return state.favorites.map(byId).filter(Boolean);
+}
+
+function toggleFavorite(id) {
+  const index = state.favorites.indexOf(id);
+  const wasFav = index !== -1;
+  if (wasFav) state.favorites.splice(index, 1);
+  else state.favorites.push(id);
+  saveFavorites();
+
+  const loc = byId(id);
+  if (loc) {
+    showToast(wasFav ? `«${loc.title}» usunięto z Twojej trasy` : `«${loc.title}» dodano do Twojej trasy`);
+  }
+  updateRouteCard();
+  renderPlaceList();
+  if (state.currentId === id) syncModalFav();
+}
+
+/* ── MAPA ──────────────────────────────────────────────────── */
+
 const map = L.map('map', {
-  center:           [52.4064, 16.9252],
-  zoom:             14,
-  minZoom:          12,
-  maxZoom:          18,
-  zoomControl:      false,
-  attributionControl: false,
+  center: [52.4064, 16.9252],
+  zoom: 14,
+  minZoom: 12,
+  maxZoom: 18,
+  zoomControl: false,
 });
-
 L.control.zoom({ position: 'bottomright' }).addTo(map);
+L.control.attribution({ position: 'bottomleft', prefix: false }).addTo(map);
 
-const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
-  subdomains: 'abcd',
-  maxZoom: 20
+/* Kafle: jasny (voyager) / ciemny (dark_all) */
+const TILE_LIGHT = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+const TILE_DARK  = 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png';
+
+const tileLayer = L.tileLayer(TILE_LIGHT, {
+  subdomains: 'abcd',
+  maxZoom: 20,
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
 }).addTo(map);
 
-/* ── GEOLOCATION (ГДЕ Я?) ────────────────────────────────── */
+const markerGroup = L.layerGroup().addTo(map);
+
+/* ── GEOLOKACJA ("GDZIE JESTEM?") ─────────────────────────── */
+
 const locateControl = L.control({ position: 'bottomright' });
 
-locateControl.onAdd = function() {
-  const btn = L.DomUtil.create('button', 'locate-btn');
-  btn.innerHTML = '🧭 Gdzie jestem?';
-  btn.title = 'Pokaż moją lokalizację';
-  
-  // Добавим немного стилей прямо сюда для красивой кнопки
-  btn.style.cssText = `
-    background: #fdf7ee; border: 2px solid rgba(122,92,56,.25); border-radius: 8px;
-    padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
-    color: #7a5c38; cursor: pointer; box-shadow: 0 4px 16px rgba(20,12,4,.18);
-    margin-bottom: 10px; margin-right: 10px; transition: all 0.2s;
-  `;
-  btn.onmouseover = () => { btn.style.background = '#f5efe3'; btn.style.color = '#c8813a'; };
-  btn.onmouseout  = () => { btn.style.background = '#fdf7ee'; btn.style.color = '#7a5c38'; };
-
-  btn.onclick = function(e) {
-    e.stopPropagation();
-    btn.innerHTML = '⏳ Szukam...';
-    map.locate({ setView: true, maxZoom: 16 });
-  };
-  return btn;
+locateControl.onAdd = function () {
+  const btn = L.DomUtil.create('button', 'locate-btn');
+  btn.type = 'button';
+  btn.innerHTML = '🧭 Gdzie jestem?';
+  btn.title = 'Pokaż moją lokalizację';
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    btn.textContent = '⏳ Szukam…';
+    map.locate({ setView: true, maxZoom: 16 });
+  });
+  return btn;
 };
 locateControl.addTo(map);
 
-let userMarker = null;
+map.on('locationfound', (e) => {
+  const btn = $('.locate-btn');
+  if (btn) btn.textContent = '🧭 Gdzie jestem?';
 
-map.on('locationfound', function(e) {
-  const btn = document.querySelector('.locate-btn');
-  if (btn) btn.innerHTML = '🧭 Gdzie jestem?';
-
-  if (userMarker) {
-    userMarker.setLatLng(e.latlng);
-  } else {
-    // Красивый синий кружочек для геолокации
-    const userIcon = L.divIcon({
-      html: `<div style="width:16px;height:16px;background:#2980b9;border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>`,
-      className: '',
-      iconSize: [16, 16],
-      iconAnchor: [8, 8]
-    });
-    userMarker = L.marker(e.latlng, { icon: userIcon })
-      .addTo(map)
-      .bindTooltip('Jesteś tutaj', { direction: 'top', offset: [0, -10] });
-  }
-});
-
-map.on('locationerror', function(e) {
-  const btn = document.querySelector('.locate-btn');
-  if (btn) btn.innerHTML = '🧭 Gdzie jestem?';
-  alert('Nie udało się pobrać lokalizacji. Sprawdź, czy masz włączony GPS i czy zezwoliłeś przeglądarce na dostęp do lokalizacji.');
-});
-
-/* ── STATE ───────────────────────────────────────────────── */
-let swiperInstance = null;
-let currentLocation = null;
-let allMarkers = []; // Хранилище маркеров для фильтрации
-
-/* ── DOM REFS ────────────────────────────────────────────── */
-const overlay     = document.getElementById('modal-overlay');
-const panel       = document.getElementById('modal-panel');
-const closeBtn    = document.getElementById('modal-close');
-const titleEl     = document.getElementById('modal-title');
-const categoryEl  = document.getElementById('modal-category');
-const descEl      = document.getElementById('modal-description');
-const swiperWrap  = document.getElementById('swiper-wrapper');
-const galCurrent  = document.getElementById('gallery-current');
-const galTotal    = document.getElementById('gallery-total');
-const loadScreen  = document.getElementById('loading-screen');
-const searchInput   = document.getElementById('search-input');
-const searchResults = document.getElementById('search-results');
-
-// Sidebar Refs
-const sidebar = document.getElementById('sidebar');
-const menuToggle = document.getElementById('menu-toggle');
-const sidebarClose = document.getElementById('sidebar-close');
-const sidebarCategories = document.getElementById('sidebar-categories');
-
-/* ── FETCH DATA ──────────────────────────────────────────── */
-async function loadData() {
-  try {
-    const res  = await fetch(DATA_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    renderMarkers(data);
-    renderSidebarFilters(data); // Генерируем фильтры
-    initSearch(data);
-    dismissLoadingScreen();
-  } catch (err) {
-    console.error('Błąd ładowania danych:', err);
-    dismissLoadingScreen();
-    showDataError();
-  }
-}
-
-/* ── MARKERS ─────────────────────────────────────────────── */
-function renderMarkers(locations) {
-  locations.forEach(loc => {
-    if (typeof loc.lat === 'undefined' || typeof loc.lng === 'undefined') return;
-
-    const color = getCategoryColor(loc.category);
-    const icon = L.divIcon({
-      html: `<div class="custom-pin" role="button" tabindex="0" aria-label="${loc.title}">${createPinSVG(color)}</div>`,
-      iconSize:   [36, 48],
-      iconAnchor: [18, 48],
-      className:  '',
-    });
-
-    const marker = L.marker([loc.lat, loc.lng], { icon, title: loc.title })
-      .addTo(map)
-      .bindTooltip(loc.title, { permanent: false, direction: 'top', offset: [0, -44], opacity: 1 });
-
-    marker.on('click', () => openModal(loc));
-
-    // Сохраняем маркер для бокового меню
-    allMarkers.push({ category: loc.category, marker: marker });
-  });
-}
-
-/* ── SIDEBAR & FILTERING ─────────────────────────────────── */
-if(menuToggle && sidebarClose) {
-  menuToggle.addEventListener('click', () => sidebar.classList.add('is-open'));
-  sidebarClose.addEventListener('click', () => sidebar.classList.remove('is-open'));
-}
-
-function renderSidebarFilters(locations) {
-  if(!sidebarCategories) return;
-  const categories = [...new Set(locations.map(l => l.category))].sort();
-
-  // Обернули текст в <span class="filter-name">
-  let html = `<button class="filter-btn is-active" data-cat="all">
-                <span class="filter-color-dot" style="background: #999"></span>
-                <span class="filter-name">Wszystkie miejsca</span>
-              </button>`;
-
-  categories.forEach(cat => {
-    const color = getCategoryColor(cat);
-    // И здесь тоже обернули текст
-    html += `<button class="filter-btn" data-cat="${cat}">
-               <span class="filter-color-dot" style="background: ${color}"></span>
-               <span class="filter-name">${cat}</span>
-             </button>`;
+  const icon = L.divIcon({
+    html: '<div class="user-dot"></div>',
+    className: 'user-marker',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
   });
 
-  sidebarCategories.innerHTML = html;
+  if (state.userMarker) {
+    state.userMarker.setLatLng(e.latlng);
+  } else {
+    state.userMarker = L.marker(e.latlng, { icon, zIndexOffset: 900 })
+      .addTo(map)
+      .bindTooltip('Jesteś tutaj', { direction: 'top', offset: [0, -12] });
+  }
+});
 
-  const filterBtns = sidebarCategories.querySelectorAll('.filter-btn');
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
-      filterMap(btn.getAttribute('data-cat'));
-      if (window.innerWidth <= 768) sidebar.classList.remove('is-open');
+map.on('locationerror', () => {
+  const btn = $('.locate-btn');
+  if (btn) btn.textContent = '🧭 Gdzie jestem?';
+  showToast('Nie udało się ustalić lokalizacji. Sprawdź dostęp do GPS w przeglądarce.', 'error');
+});
+
+/* ── TOAST ─────────────────────────────────────────────────── */
+
+let toastTimer = null;
+
+function showToast(message, type = 'info') {
+  if (!dom.toast) return;
+  dom.toast.textContent = message;
+  dom.toast.className = `toast is-visible${type === 'error' ? ' toast-error' : ''}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { dom.toast.className = 'toast'; }, 4200);
+}
+
+/* ── ŁADOWANIE DANYCH ──────────────────────────────────────── */
+
+async function loadData() {
+  try {
+    const res = await fetch(DATA_URL, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = (await res.json()).filter(
+      (loc) => loc && Number.isFinite(loc.lat) && Number.isFinite(loc.lng)
+    );
+    if (!data.length) throw new Error('Pusta lista miejsc');
+
+    state.locations = data;
+    state.dataReady = true;
+
+    renderMarkers(data);
+    renderFilters(data);
+    renderPlaceList();
+    updateRouteCard();
+    initSearch();
+    dismissLoadingScreen();
+    maybeShowHint();
+  } catch (err) {
+    console.error('Błąd ładowania danych:', err);
+    dismissLoadingScreen();
+    showDataError();
+  }
+}
+
+/* ── PINY + MARKERy ────────────────────────────────────────── */
+
+let pinUid = 0;
+
+/* Każdy pin dostaje własny id filtra cienia (unikalność w DOM). */
+function createPinSVG(color) {
+  const uid = `pinShadow${++pinUid}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="46" viewBox="0 0 34 46" aria-hidden="true">
+    <defs>
+      <filter id="${uid}" x="-30%" y="-10%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(20,12,4,.45)"/>
+      </filter>
+    </defs>
+    <path class="pin-body" d="M17 2C9.27 2 3 8.27 3 16c0 10.5 14 28.5 14 28.5S31 26.5 31 16C31 8.27 24.73 2 17 2Z"
+          fill="${color}" filter="url(#${uid})"/>
+    <circle cx="17" cy="16" r="7" fill="rgba(255,255,255,0.22)"/>
+    <circle cx="17" cy="16" r="4.5" fill="rgba(255,255,255,0.75)"/>
+  </svg>`;
+}
+
+function renderMarkers(locations) {
+  locations.forEach((loc) => {
+    const icon = L.divIcon({
+      html: `<div class="custom-pin" role="button" tabindex="0" aria-label="${escapeHtml(loc.title)}">${createPinSVG(colorOf(loc.category))}</div>`,
+      iconSize: [34, 46],
+      iconAnchor: [17, 46],
+      className: '',
+    });
+
+    const marker = L.marker([loc.lat, loc.lng], { icon, title: loc.title, riseOnHover: true });
+    marker.on('click', () => openModal(loc.id));
+
+    state.markers.set(loc.id, marker);
+  });
+  applyFilter();
+}
+
+function applyFilter() {
+  markerGroup.clearLayers();
+  state.locations.forEach((loc) => {
+    if (state.activeCategory === 'all' || loc.category === state.activeCategory) {
+      markerGroup.addLayer(state.markers.get(loc.id));
+    }
+  });
+}
+
+/* ── FILTRY (CHIPY KATEGORII) ──────────────────────────────── */
+
+function renderFilters(locations) {
+  if (!dom.catChips) return;
+
+  const counts = new Map();
+  locations.forEach((loc) => counts.set(loc.category, (counts.get(loc.category) || 0) + 1));
+
+  let html = `<button type="button" class="chip is-active" data-cat="all" aria-pressed="true">
+      <span class="chip-dot" style="background: var(--clr-amber)"></span>
+      <span class="chip-name">Wszystkie</span>
+      <span class="chip-count">${locations.length}</span>
+    </button>`;
+
+  [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([cat, n]) => {
+      html += `<button type="button" class="chip" data-cat="${escapeHtml(cat)}" aria-pressed="false">
+        <span class="chip-dot" style="background: ${colorOf(cat)}"></span>
+        <span class="chip-name">${escapeHtml(cat)}</span>
+        <span class="chip-count">${n}</span>
+      </button>`;
+    });
+
+  dom.catChips.innerHTML = html;
+
+  $$('.chip', dom.catChips).forEach((chip) => {
+    chip.addEventListener('click', () => {
+      state.activeCategory = chip.dataset.cat;
+      $$('.chip', dom.catChips).forEach((c) => {
+        const active = c === chip;
+        c.classList.toggle('is-active', active);
+        c.setAttribute('aria-pressed', String(active));
+      });
+      applyFilter();
+      renderPlaceList();
+      closeSidebarIfMobile();
     });
   });
 }
 
-function filterMap(category) {
-  allMarkers.forEach(item => {
-    if (category === 'all' || item.category === category) {
-      if (!map.hasLayer(item.marker)) map.addLayer(item.marker);
-    } else {
-      if (map.hasLayer(item.marker)) map.removeLayer(item.marker);
-    }
-  });
+/* ── LISTA MIEJSC ──────────────────────────────────────────── */
+
+function visibleLocations() {
+  return state.locations.filter(
+    (loc) => state.activeCategory === 'all' || loc.category === state.activeCategory
+  );
 }
 
-/* ── MODAL ───────────────────────────────────────────────── */
-function openModal(loc) {
-  currentLocation = loc;
-  titleEl.textContent    = loc.title;
-  categoryEl.textContent = loc.category;
+function placeCountLabel(n) {
+  if (n === 1) return '1 miejsce';
+  if (n >= 2 && n <= 4) return `${n} miejsca`;
+  return `${n} miejsc`;
+}
 
-/* Описание + Чистые кнопки с CSS-классами */
-  descEl.innerHTML = `
-    <p style="margin-bottom: 20px; line-height: 1.6; color: #333;">${loc.description}</p>
-    
-    <div class="modal-actions">
-      ${loc.pdf ? `
-        <a href="${loc.pdf}" target="_blank" class="modal-btn modal-btn-pdf">
-          <span>📖</span> <span>Przewodnik (PDF)</span>
-        </a>
-      ` : ''}
-      
-      <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" class="modal-btn modal-btn-map">
-        <span>🗺️</span> <span>Jak dojechać?</span>
-      </a>
-    </div>
-  `;
+function renderPlaceList() {
+  if (!dom.placeList) return;
+  const locs = visibleLocations();
+  dom.listCount.textContent = placeCountLabel(locs.length);
 
-  const color = getCategoryColor(loc.category);
-  categoryEl.style.color       = color;
-  categoryEl.style.background  = `${color}18`;
-  categoryEl.style.borderColor = `${color}40`;
+  dom.placeList.innerHTML = locs.map((loc) => {
+    const isFav = state.favorites.includes(loc.id);
+    return `<article class="place-card" data-id="${escapeHtml(loc.id)}" role="button" tabindex="0">
+      <span class="place-dot" style="background:${colorOf(loc.category)}"></span>
+      <div class="place-info">
+        <h4 class="place-title">${escapeHtml(loc.title)}</h4>
+        <p class="place-sub">${escapeHtml(loc.category)}${loc.address ? ` · ${escapeHtml(loc.address)}` : ''}</p>
+      </div>
+      <button type="button" class="place-star${isFav ? ' is-on' : ''}"
+              aria-pressed="${isFav}" aria-label="${isFav ? 'Usuń z trasy' : 'Dodaj do trasy'}">★</button>
+    </article>`;
+  }).join('');
 
-  swiperWrap.innerHTML = '';
-  const images = loc.images || [];
-  images.forEach((src, i) => {
-    const slide = document.createElement('div');
-    slide.className = 'swiper-slide';
-    const img = document.createElement('img');
-    img.src = src; img.alt = `${loc.title} — zdjęcie ${i + 1}`; img.loading = 'lazy';
-    slide.appendChild(img); swiperWrap.appendChild(slide);
-  });
+  $$('.place-card', dom.placeList).forEach((card) => {
+    const loc = byId(card.dataset.id);
+    if (!loc) return;
 
-  galTotal.textContent = images.length;
-  galCurrent.textContent = 1;
+    card.addEventListener('click', () => goToLocation(loc));
+    card.addEventListener('keydown', (e) => { if (e.key === 'Enter') card.click(); });
 
-  if (swiperInstance) { swiperInstance.destroy(true, true); swiperInstance = null; }
+    const star = $('.place-star', card);
+    star.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFavorite(loc.id);
+    });
+  });
+}
 
-  overlay.classList.add('is-open');
-  overlay.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
+/* ── MOJA TRASA (KARTA W SIDEBARZE) ────────────────────────── */
 
-  requestAnimationFrame(() => {
-    swiperInstance = new Swiper('.modal-swiper', {
-      loop: images.length > 1, speed: 500, effect: 'fade', fadeEffect: { crossFade: true },
-      navigation: { prevEl: '.swiper-button-prev', nextEl: '.swiper-button-next' },
-      pagination: { el: '.swiper-pagination', clickable: true },
-      on: { slideChange() { galCurrent.textContent = this.realIndex + 1; } },
-    });
-  });
-  requestAnimationFrame(() => closeBtn.focus());
+function updateRouteCard() {
+  if (!dom.routeCard) return;
+  const favs = favoriteLocations();
+
+  dom.routeCard.hidden = favs.length === 0;
+  dom.routeCount.textContent = favs.length ? placeCountLabel(favs.length) : '0 miejsc';
+
+  dom.routeSteps.innerHTML = favs.length
+    ? favs.map((loc, i) => `
+        <li class="route-step">
+          <span class="route-step-num">${i + 1}</span>
+          <span class="route-step-name">${escapeHtml(loc.title)}</span>
+        </li>`).join('')
+    : '<li class="route-empty">Dodaj miejsca gwiazdką ★, aby zbudować trasę</li>';
+
+  dom.routeGmaps.href = gmapsRouteUrl(favs);
+  dom.routeMapBtn.textContent = state.routeLayer ? 'Usuń trasę z mapy' : 'Pokaż trasę na mapie';
+}
+
+/* Ścieżka w Google Maps: pierwsze pkt = start, ostatnie = cel. */
+function gmapsRouteUrl(favs) {
+  if (!favs.length) return '#';
+  if (favs.length === 1) {
+    const p = favs[0];
+    return `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
+  }
+  const points = favs.map((p) => `${p.lat},${p.lng}`).join('/');
+  return `https://www.google.com/maps/dir/${points}`;
+}
+
+function toggleRoute() {
+  if (state.routeLayer) {
+    map.removeLayer(state.routeLayer);
+    state.routeLayer = null;
+  } else {
+    const points = favoriteLocations().map((loc) => [loc.lat, loc.lng]);
+    if (points.length >= 2) {
+      state.routeLayer = L.polyline(points, {
+        color: '#e8b84b',
+        weight: 4,
+        opacity: 0.9,
+        dashArray: '10 12',
+      }).addTo(map);
+      map.fitBounds(state.routeLayer.getBounds(), { padding: [80, 80] });
+    } else if (points.length === 1) {
+      map.flyTo(points[0], 15, { duration: 1 });
+    }
+  }
+  updateRouteCard();
+}
+
+/* ── OTWARCIE MENU ─────────────────────────────────────────── */
+
+function openSidebar() {
+  dom.sidebar.classList.add('is-open');
+  dom.menuToggle.setAttribute('aria-expanded', 'true');
+  document.body.classList.add('sidebar-open');
+}
+
+function closeSidebar() {
+  dom.sidebar.classList.remove('is-open');
+  dom.menuToggle.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('sidebar-open');
+}
+
+function closeSidebarIfMobile() {
+  if (window.matchMedia('(max-width: 768px)').matches) closeSidebar();
+}
+
+if (dom.menuToggle && dom.sidebarClose) {
+  dom.menuToggle.addEventListener('click', openSidebar);
+  dom.sidebarClose.addEventListener('click', closeSidebar);
+}
+
+if (dom.routeMapBtn) {
+  dom.routeMapBtn.addEventListener('click', toggleRoute);
+}
+
+/* ── NAWIGACJA DO MIEJSCA ─────────────────────────────────── */
+
+function goToLocation(loc) {
+  closeSidebar();
+  const target = [loc.lat, loc.lng];
+
+  let opened = false;
+  const open = () => {
+    if (opened) return;
+    opened = true;
+    openModal(loc.id);
+  };
+
+  if (map.getBounds().contains(target)) {
+    open();
+    return;
+  }
+
+  map.on('moveend', open, { once: true });
+  map.flyTo(target, 16, { duration: 1.1 });
+  setTimeout(open, 1600); // zapas, gdyby moveend nie wybił
+}
+
+/* ── WYSZUKIWARKA ─────────────────────────────────────────── */
+
+let searchTimer = null;
+
+function initSearch() {
+  if (!dom.searchInput || !dom.searchResults) return;
+
+  dom.searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(runSearch, 120);
+  });
+
+  dom.searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') pickFirstResult();
+    if (e.key === 'Escape') clearSearch();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.sidebar-search')) {
+      dom.searchResults.classList.remove('is-active');
+    }
+  });
+}
+
+function runSearch() {
+  const q = dom.searchInput.value.toLowerCase().trim();
+
+  if (q.length < 2) {
+    dom.searchResults.innerHTML = '';
+    dom.searchResults.classList.remove('is-active');
+    return;
+  }
+
+  const matches = state.locations.filter((loc) =>
+    loc.title.toLowerCase().includes(q) ||
+    loc.category.toLowerCase().includes(q) ||
+    String(loc.address || '').toLowerCase().includes(q)
+  ).slice(0, 12);
+
+  if (!matches.length) {
+    dom.searchResults.innerHTML = `<div class="search-item is-empty">Nic nie znaleziono…</div>`;
+    dom.searchResults.classList.add('is-active');
+    return;
+  }
+
+  dom.searchResults.innerHTML = matches.map((loc) => `
+    <div class="search-item" data-id="${escapeHtml(loc.id)}" role="option">
+      <strong>${escapeHtml(loc.title)}</strong>
+      <span>${escapeHtml(loc.category)}</span>
+    </div>`).join('');
+
+  $$('.search-item', dom.searchResults).forEach((item) => {
+    item.addEventListener('click', () => {
+      const loc = byId(item.dataset.id);
+      if (!loc) return;
+      clearSearch();
+      goToLocation(loc);
+    });
+  });
+
+  dom.searchResults.classList.add('is-active');
+}
+
+function pickFirstResult() {
+  const first = $('.search-item:not(.is-empty)', dom.searchResults);
+  if (first) first.click();
+}
+
+function clearSearch() {
+  dom.searchInput.value = '';
+  dom.searchResults.innerHTML = '';
+  dom.searchResults.classList.remove('is-active');
+}
+
+/* ── MODAL: SZCZEGÓŁY MIEJSCA ─────────────────────────────── */
+
+function openModal(id) {
+  const loc = byId(id);
+  if (!loc) return;
+  state.currentId = id;
+
+  dom.title.textContent = loc.title;
+  dom.description.textContent = loc.description;
+  dom.address.textContent = loc.address || '';
+  dom.coords.textContent = `${loc.lat.toFixed(5)}° N · ${loc.lng.toFixed(5)}° E`;
+
+  const color = colorOf(loc.category);
+  dom.category.textContent = loc.category;
+  dom.category.style.color = color;
+  dom.category.style.background = hexToRgba(color, 0.12);
+  dom.category.style.borderColor = hexToRgba(color, 0.35);
+
+  /* akcje */
+  dom.pdfLink.hidden = !loc.pdf;
+  dom.pdfLink.href = loc.pdf || '#';
+  dom.gmapsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
+  dom.amapsLink.href = `https://maps.apple.com/?daddr=${loc.lat},${loc.lng}`;
+
+  buildGallery(loc);
+  syncModalFav();
+
+  dom.overlay.classList.add('is-open');
+  dom.overlay.setAttribute('aria-hidden', 'false');
+  requestAnimationFrame(() => dom.modalClose.focus());
 }
 
 function closeModal() {
-  overlay.classList.remove('is-open');
-  overlay.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-  currentLocation = null;
+  dom.overlay.classList.remove('is-open');
+  dom.overlay.setAttribute('aria-hidden', 'true');
+  state.currentId = null;
+  dom.panel.style.transform = '';
 }
 
-closeBtn.addEventListener('click', closeModal);
-overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal(); });
-if(panel) panel.addEventListener('click', (e) => e.stopPropagation());
-
-/* ── LOADING SCREEN ──────────────────────────────────────── */
-function dismissLoadingScreen() {
-  setTimeout(() => {
-    loadScreen.classList.add('is-gone');
-    loadScreen.addEventListener('transitionend', () => { loadScreen.style.display = 'none'; }, { once: true });
-  }, 1500);
+/* Estetyczny fallback, gdy zdjęcie nie istnieje / jest offline. */
+function fallbackImageSrc(title, color) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="${color}"/>
+        <stop offset="1" stop-color="#1a1108"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="#241a10"/>
+    <rect width="100%" height="100%" fill="url(#g)" opacity="0.25"/>
+    <text x="50%" y="50%" font-family="Georgia, serif" font-size="34" fill="#f5efe3" text-anchor="middle">${escapeHtml(title)}</text>
+    <text x="50%" y="60%" font-family="sans-serif" font-size="13" fill="#b59c7a" letter-spacing="4" text-anchor="middle">POZNAŃ · MIASTO PRZYGÓD</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
-function showDataError() {
-  const errDiv = document.createElement('div');
-  errDiv.style.cssText = `position:fixed; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center; background:rgba(26,17,8,.9); color:#f5efe3; font-family:'Playfair Display',serif; text-align:center; padding:24px;`;
-  errDiv.innerHTML = `<div><p style="font-size:42px;margin-bottom:8px;">⚠</p><h2 style="font-size:22px;margin-bottom:10px;">Błąd ładowania danych</h2></div>`;
-  document.body.appendChild(errDiv);
-}
+function buildGallery(loc) {
+  const images = Array.isArray(loc.images) ? loc.images : [];
 
-/* ── LIVE SEARCH ─────────────────────────────────────────── */
-function initSearch(locations) {
-  if (!searchInput || !searchResults) return;
+  dom.swiperWrap.innerHTML = images.map((src, i) => `
+    <div class="swiper-slide">
+      <img src="${escapeHtml(src)}" alt="${escapeHtml(loc.title)} — zdjęcie ${i + 1}"
+           loading="lazy" decoding="async"/>
+    </div>`).join('');
 
-  searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    searchResults.innerHTML = '';
+  $$('.swiper-slide img', dom.swiperWrap).forEach((img) => {
+    img.addEventListener('error', () => {
+      img.src = fallbackImageSrc(loc.title, colorOf(loc.category));
+    }, { once: true });
+  });
 
-    // Начинаем искать только если введено больше 1 буквы
-    if (query.length < 2) {
-      searchResults.classList.remove('is-active');
-      return;
-    }
+  dom.galTotal.textContent = String(images.length);
+  dom.galCurrent.textContent = '1';
 
-    // Ищем совпадения в названиях и категориях
-    const matches = locations.filter(loc => 
-      loc.title.toLowerCase().includes(query) || 
-      loc.category.toLowerCase().includes(query)
-    );
-
-    if (matches.length > 0) {
-      matches.forEach(loc => {
-        const div = document.createElement('div');
-        div.className = 'search-item';
-        div.innerHTML = `<strong>${loc.title}</strong> <span style="font-size:11px; color:#7a5c38; display:block;">${loc.category}</span>`;
-        
-        div.addEventListener('click', () => {
-          // 1. Очищаем поиск и закрываем меню
-          searchInput.value = '';
-          searchResults.classList.remove('is-active');
-          sidebar.classList.remove('is-open');
-
-          // 2. Убеждаемся, что маркер не скрыт фильтром (показываем всё)
-          filterMap('all');
-          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('is-active')); // Выключаем все
-          document.querySelector('[data-cat="all"]').classList.add('is-active'); // Включаем нужную
-
-          // 3. Кинематографично летим к точке!
-          map.flyTo([loc.lat, loc.lng], 16, { animate: true, duration: 1.5 });
-
-          // 4. Открываем модальное окно после завершения полета
-          setTimeout(() => {
-            openModal(loc);
-          }, 1500);
-        });
-        
-        searchResults.appendChild(div);
-      });
-      searchResults.classList.add('is-active');
-    } else {
-      // Если ничего не найдено
-      const div = document.createElement('div');
-      div.className = 'search-item';
-      div.textContent = 'Nic nie znaleziono...';
-      div.style.cursor = 'default';
-      searchResults.appendChild(div);
-      searchResults.classList.add('is-active');
-    }
-  });
-
-  // Прячем результаты, если кликнули куда-то мимо поиска
-  document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-      searchResults.classList.remove('is-active');
-    }
-  });
-}
-
-/* ── PRO LIVE WEATHER WIDGET ─────────────────────────────── */
-async function fetchWeather() {
-  const tempEl = document.getElementById('weather-temp');
-  const iconEl = document.getElementById('weather-icon');
-  const descEl = document.getElementById('weather-desc');
-  const windEl = document.getElementById('weather-wind');
-  
-  if (!tempEl || !iconEl) return;
-
-  try {
-    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.4064&longitude=16.9252&current_weather=true');
-    const data = await res.json();
-    const w = data.current_weather;
-
-    tempEl.textContent = Math.round(w.temperature) + '°C';
-    windEl.textContent = `💨 ${Math.round(w.windspeed)} km/h`;
-
-    let icon = '🌤️';
-    let desc = 'Słonecznie';
-    
-    if (w.weathercode === 0) { icon = '☀️'; desc = 'Bezchmurnie'; }
-    else if (w.weathercode > 0 && w.weathercode <= 3) { icon = '⛅'; desc = 'Zachmurzenie'; }
-    else if (w.weathercode === 45 || w.weathercode === 48) { icon = '🌫️'; desc = 'Mgła'; }
-    else if (w.weathercode >= 51 && w.weathercode <= 67) { icon = '🌧️'; desc = 'Deszcz'; }
-    else if (w.weathercode >= 71 && w.weathercode <= 77) { icon = '❄️'; desc = 'Śnieg'; }
-    else if (w.weathercode >= 80 && w.weathercode <= 82) { icon = '🌦️'; desc = 'Przelotne opady'; }
-    else if (w.weathercode >= 95) { icon = '⛈️'; desc = 'Burza'; }
-
-    iconEl.textContent = icon;
-    descEl.textContent = desc;
-  } catch (err) {
-    console.error('Błąd pogody:', err);
-    tempEl.textContent = 'Poznań';
-    descEl.textContent = 'Brak danych';
-    windEl.textContent = '';
+  if (state.swiper) {
+    state.swiper.destroy(true, true);
+    state.swiper = null;
   }
+
+  requestAnimationFrame(() => {
+    state.swiper = new Swiper('.modal-swiper', {
+      loop: images.length > 1,
+      speed: 480,
+      effect: 'fade',
+      fadeEffect: { crossFade: true },
+      navigation: {
+        prevEl: '.swiper-button-prev',
+        nextEl: '.swiper-button-next',
+      },
+      pagination: { el: '.swiper-pagination', clickable: true },
+      on: {
+        slideChange() {
+          dom.galCurrent.textContent = String(this.realIndex + 1);
+        },
+      },
+    });
+  });
 }
 
-// Запускаем погоду
-fetchWeather();
-setInterval(fetchWeather, 3600000);
-
-/* ── DARK THEME LOGIC ────────────────────────────────────── */
-const themeToggleBtn = document.getElementById('theme-toggle');
-
-// Проверяем память браузера: если пользователь уже включал ночь, оставляем её
-if (localStorage.getItem('theme') === 'dark') {
-  enableDarkMode();
+/* guzik ★ w modalu */
+function syncModalFav() {
+  const on = state.favorites.includes(state.currentId);
+  dom.modalFav.classList.toggle('is-on', on);
+  dom.modalFav.setAttribute('aria-pressed', String(on));
+  dom.modalFav.setAttribute('aria-label', on ? 'Usuń z trasy' : 'Dodaj do trasy');
 }
 
-themeToggleBtn.addEventListener('click', () => {
-  if (document.body.classList.contains('dark-theme')) {
-    disableDarkMode();
-  } else {
-    enableDarkMode();
+dom.modalFav.addEventListener('click', () => {
+  if (state.currentId) toggleFavorite(state.currentId);
+});
+
+dom.modalClose.addEventListener('click', closeModal);
+dom.overlay.addEventListener('click', (e) => {
+  if (e.target === dom.overlay) closeModal();
+});
+
+/* fokus nie ucieka poza modal */
+dom.overlay.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  const focusables = $$('button, a[href]', dom.panel).filter((el) => el.offsetParent !== null);
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
   }
 });
 
-function enableDarkMode() {
-  document.body.classList.add('dark-theme');
-  themeToggleBtn.textContent = '☀️';
-  // Магия: меняем светлую карту на специальную ночную (dark_all)
-  tileLayer.setUrl('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png');
-  localStorage.setItem('theme', 'dark'); // Сохраняем в память
+/* ── SWIPE-DOLE, ABY ZAMKNĄĆ (MObil) ───────────────────────── */
+
+(function initSwipeClose() {
+  const panel = dom.panel;
+  const content = $('.modal-content', panel);
+  let startY = null;
+  let startX = null;
+
+  panel.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    startY = e.touches[0].clientY;
+    startX = e.touches[0].clientX;
+    panel.classList.add('swiping');
+  }, { passive: true });
+
+  panel.addEventListener('touchmove', (e) => {
+    if (startY === null) return;
+    const dy = e.touches[0].clientY - startY;
+    const dx = Math.abs(e.touches[0].clientX - startX);
+
+    /* tylko wiraż w dół, wyraźnie pionowy */
+    if (dy <= 0 || dx > dy * 0.6) return;
+    /* jeśli treść jest przewinięta w dół — nie zakrywamy scrolla */
+    if (content && content.scrollTop > 8 && !e.target.closest('.modal-gallery')) return;
+
+    panel.style.transform = `translateY(${dy * 0.85}px)`;
+  }, { passive: true });
+
+  const finish = (e) => {
+    if (startY === null) return;
+    const endY = e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : startY;
+    const dy = endY - startY;
+    startY = null;
+    startX = null;
+    panel.classList.remove('swiping');
+
+    if (dy > 90) {
+      panel.style.transform = 'translateY(100%)';
+      setTimeout(closeModal, 240);
+    } else {
+      panel.style.transform = '';
+    }
+  };
+
+  panel.addEventListener('touchend', finish, { passive: true });
+  panel.addEventListener('touchcancel', finish, { passive: true });
+})();
+
+/* ── KLAWIATURA: ESC ZAMYKA MODAL, POTEM MENU ─────────────── */
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (dom.overlay.classList.contains('is-open')) closeModal();
+  else if (dom.sidebar.classList.contains('is-open')) closeSidebar();
+});
+
+/* ── POGODA (OPEN-METEO) ─────────────────────────────────── */
+
+function describeWeather(code) {
+  if (code === 0) return ['☀️', 'Bezchmurnie'];
+  if (code <= 3) return ['⛅', 'Zachmurzenie'];
+  if (code === 45 || code === 48) return ['🌫️', 'Mgła'];
+  if (code <= 67) return ['🌧️', 'Deszcz'];
+  if (code <= 77) return ['❄️', 'Śnieg'];
+  if (code <= 82) return ['🌦️', 'Przelotne opady'];
+  if (code <= 99) return ['⛈️', 'Burza'];
+  return ['🌤️', 'Zmienna pogoda'];
 }
 
-function disableDarkMode() {
-  document.body.classList.remove('dark-theme');
-  themeToggleBtn.textContent = '🌙';
-  // Возвращаем светлую карту (voyager)
-  tileLayer.setUrl('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png');
-  localStorage.setItem('theme', 'light'); // Сохраняем в память
+function showWeatherFallback() {
+  dom.weatherIcon.textContent = '🌆';
+  dom.weatherTemp.textContent = 'Poznań';
+  dom.weatherDesc.textContent = 'pogoda niedostępna';
+  dom.weatherWind.textContent = '';
 }
 
-// Когда открываешь меню (внутри функции openSidebar или в обработчике):
-document.body.classList.add('menu-is-open');
+async function fetchWeather() {
+  if (!dom.weatherTemp) return;
+  if (!navigator.onLine) {
+    showWeatherFallback();
+    return;
+  }
+  try {
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.4064&longitude=16.9252&current_weather=true');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const w = data.current_weather;
 
-// Когда закрываешь меню (внутри функции closeSidebar или в обработчике):
-document.body.classList.remove('menu-is-open');
+    dom.weatherTemp.textContent = `${Math.round(w.temperature)}°C`;
+    dom.weatherWind.textContent = `💨 ${Math.round(w.windspeed)} km/h`;
+    const [icon, desc] = describeWeather(w.weathercode);
+    dom.weatherIcon.textContent = icon;
+    dom.weatherDesc.textContent = desc;
+  } catch (err) {
+    console.error('Błąd pogody:', err);
+    showWeatherFallback();
+  }
+}
 
-/* ── INIT ────────────────────────────────────────────────── */
+fetchWeather();
+setInterval(fetchWeather, 30 * 60 * 1000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) fetchWeather();
+});
+
+/* ── CIEMNY MOTYW ────────────────────────────────────────── */
+
+function applyTheme(theme) {
+  const dark = theme === 'dark';
+  document.body.classList.toggle('dark-theme', dark);
+  dom.themeToggle.textContent = dark ? '☀️' : '🌙';
+  dom.themeToggle.setAttribute('aria-label', dark ? 'Włącz jasny motyw' : 'Włącz ciemny motyw');
+  tileLayer.setUrl(dark ? TILE_DARK : TILE_LIGHT);
+  try { localStorage.setItem(THEME_KEY, theme); } catch { /* prywatny tryb */ }
+}
+
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch { /* prywatny tryb */ }
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved === 'dark' || saved === 'light' ? saved : (prefersDark ? 'dark' : 'light'));
+})();
+
+dom.themeToggle.addEventListener('click', () => {
+  applyTheme(document.body.classList.contains('dark-theme') ? 'light' : 'dark');
+});
+
+/* ── EKRAN ŁADOWANIA ─────────────────────────────────────── */
+
+const LOAD_MIN_MS = 1100;
+const loadStart = Date.now();
+let loadDone = false;
+
+function dismissLoadingScreen() {
+  loadDone = true;
+  const wait = Math.max(0, LOAD_MIN_MS - (Date.now() - loadStart));
+  setTimeout(() => {
+    if (!dom.loadScreen) return;
+    dom.loadScreen.classList.add('is-gone');
+    dom.loadScreen.addEventListener('transitionend', () => dom.loadScreen.remove(), { once: true });
+  }, wait);
+}
+
+function showDataError() {
+  showToast('Błąd ładowania danych', 'error');
+  const wrap = document.createElement('div');
+  wrap.className = 'data-error';
+  wrap.innerHTML = `
+    <div class="data-error-card">
+      <p class="data-error-icon" aria-hidden="true">⚠️</p>
+      <h2>Błąd ładowania danych</h2>
+      <p>Nie udało się pobrać listy miejsc. Sprawdź połączenie z internetem i odśwież stronę.</p>
+      <button type="button" class="modal-btn modal-btn-gmaps" id="data-error-retry">Odśwież stronę</button>
+    </div>`;
+  document.body.appendChild(wrap);
+  $('#data-error-retry').addEventListener('click', () => window.location.reload());
+}
+
+/* ── WSKAZÓWKA PRZY PIERWSZYM ODWIEDZINIE ───────────────── */
+
+function maybeShowHint() {
+  if (state.favorites.length > 0) return;
+  try {
+    if (localStorage.getItem(HINT_KEY)) return;
+    localStorage.setItem(HINT_KEY, '1');
+  } catch { return; }
+  setTimeout(() => {
+    showToast('Wskazówka: kliknij ★ przy miejscu, aby dodać je do Twojej trasy');
+  }, 2500);
+}
+
+/* ── START ─────────────────────────────────────────────────── */
+
 loadData();
