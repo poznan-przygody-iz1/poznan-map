@@ -922,3 +922,261 @@ body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
   .modal-swiper .swiper-slide-active img { animation: none; }
 }
 
+/* ── 16. HERO SPLASH: WPROWADZENIE DO POZNANIU ───────────── */
+/* Scenariusz (~2.8 s): rysunek sylwetki Ratusza „światłem”
+   → koziołki tarają się rogami → iskra/mikro-salut → napis
+   → zasuwki otwierają stronę ze stagger pierwszych elementów. */
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  opacity: 1;
+}
+.intro.is-live { display: block; }
+.intro.is-gone {
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+/* blokada strony na czas zastrzaski: scroll + focus wewnątrz + reszta UI dla SR „nieistnieje” */
+body.intro-active { overflow: hidden !important; }
+body.intro-active .top-weather-bar,
+body.intro-active .app-header,
+body.intro-active .sidebar,
+body.intro-active #map {
+  visibility: hidden;
+}
+
+/* tło: głęboka noc (#0d1117) + miękka emeraldowa poświata miasta */
+.intro-sky { position: absolute; inset: 0; background: #0d1117; }
+.intro-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(92% 56% at 50% 0%, rgba(24, 64, 50, .58) 0%, rgba(13, 17, 23, 0) 62%),
+    radial-gradient(46% 26% at 50% 63%, rgba(232, 184, 75, .05) 0%, rgba(13, 17, 23, 0) 70%),
+    radial-gradient(72% 36% at 50% 104%, rgba(232, 184, 75, .1) 0%, rgba(13, 17, 23, 0) 60%);
+}
+
+/* gwiazdki w nocy */
+.intro-sky-dot {
+  position: absolute;
+  left: var(--x); top: var(--y);
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: rgba(245, 239, 227, .85);
+  animation: introTwinkle 2.6s ease-in-out var(--tw, 0s) infinite;
+}
+@keyframes introTwinkle {
+  0%, 100% { opacity: .12; transform: scale(.7); }
+  50%      { opacity: .85; transform: scale(1); }
+}
+
+/* scena */
+.intro-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 24px;
+}
+.intro-svg {
+  width: min(64vw, 272px, calc(54vh * .79));
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 0 9px rgba(232, 184, 75, .35));
+}
+
+/* linie „rysowane światłem” (pathLength=1 → dashoffset w ułomkach) */
+.intro-svg .draw {
+  fill: none;
+  stroke: var(--clr-gold);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.intro.is-drawing .draw {
+  animation: introDraw var(--dd, .8s) cubic-bezier(.6, .05, .3, 1) var(--d, 0s) forwards;
+}
+@keyframes introDraw { to { stroke-dashoffset: 0; } }
+
+/* koziołki: kontakt rogami */
+.intro.is-butt .goat-left  { animation: introButtL .5s ease-in-out; }
+.intro.is-butt .goat-right { animation: introButtR .5s ease-in-out; }
+@keyframes introButtL { 0%, 100% { transform: translate(0, 0); } 42% { transform: translate(2.6px, -1.6px); } }
+@keyframes introButtR { 0%, 100% { transform: translate(0, 0); } 42% { transform: translate(-2.6px, -1.6px); } }
+
+/* mikro-salut z punktu styku rogów (274, 66) */
+.intro-flare {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.intro.is-burst .intro-flare {
+  animation: introFlare .65s ease-out forwards;
+}
+@keyframes introFlare {
+  0%   { opacity: .55; transform: scale(.3); }
+  100% { opacity: 0;   transform: scale(1.7); }
+}
+.intro-p { opacity: 0; }
+.intro.is-burst .intro-p {
+  animation: introBurst .9s cubic-bezier(.15, .7, .25, 1) var(--bd, 0s) forwards;
+}
+@keyframes introBurst {
+  0%   { opacity: 1;  transform: translate(0, 0) scale(1); }
+  65%  { opacity: .85; }
+  100% { opacity: 0;  transform: translate(var(--bx, 0), var(--by, 0)) scale(.15); }
+}
+.intro-ring { fill: none; stroke: var(--clr-gold); stroke-width: 1.4; opacity: 0; }
+.intro.is-burst .intro-ring { animation: introRing .85s ease-out forwards; }
+@keyframes introRing {
+  0%   { opacity: .75; r: 3; }
+  100% { opacity: 0;   r: 32; }
+}
+
+/* napis (stagger: kicker → tytuł) */
+.intro-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.intro-kicker,
+.intro-title {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.intro.is-text .intro-kicker {
+  animation: introTextKicker .5s cubic-bezier(.22, .68, 0, 1.15) forwards;
+}
+.intro.is-text .intro-title {
+  animation: introText .62s .08s cubic-bezier(.22, .68, 0, 1.15) forwards;
+}
+@keyframes introText      { to { opacity: 1;   transform: translateY(0); } }
+@keyframes introTextKicker { to { opacity: .85; transform: translateY(0); } }
+.intro-kicker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .34em;
+  text-transform: uppercase;
+  color: var(--clr-gold);
+}
+.intro-title {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  font-size: clamp(30px, 7.5vw, 46px);
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  color: #f3ecdd;
+}
+.intro-title em { position: relative; font-style: normal; color: var(--clr-gold); }
+.intro-star {
+  position: absolute;
+  top: -15px; left: 50%;
+  width: 15px; height: 15px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 6px rgba(232, 184, 75, .8));
+}
+.intro-star svg { width: 100%; height: 100%; display: block; }
+.intro-star svg path { fill: var(--clr-gold); }
+.intro.is-text .intro-star svg {
+  animation: introStarPop .55s .32s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+@keyframes introStarPop {
+  0%   { opacity: 0; transform: scale(0) rotate(-120deg); }
+  65%  { opacity: 1; transform: scale(1.4) rotate(12deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* zasuwki (curtain reveal) */
+.intro-shade {
+  position: absolute;
+  left: 0; right: 0;
+  height: 51%;
+  z-index: 5;
+  background: #0d1117;
+  transition: transform .68s cubic-bezier(.72, .02, .28, .99);
+  will-change: transform;
+}
+.intro-shade-top    { top: 0; }
+.intro-shade-bottom { bottom: 0; }
+/* cienki złoty „przeczes światła” przy krawędzi zasuwy w trakcie otwierania */
+.intro-shade-top::after,
+.intro-shade-bottom::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(232, 184, 75, .55) 30%,
+    rgba(245, 239, 227, .9) 50%,
+    rgba(232, 184, 75, .55) 70%,
+    transparent);
+  opacity: 0;
+  transition: opacity .55s ease;
+}
+.intro-shade-top::after { bottom: -1px; }
+.intro-shade-bottom::before { top: -1px; }
+.intro.is-closing .intro-shade::after,
+.intro.is-closing .intro-shade::before { opacity: 1; }
+.intro.is-closing .intro-shade-top    { transform: translateY(-103%); }
+.intro.is-closing .intro-shade-bottom { transform: translateY(103%); }
+.intro.is-skip .intro-shade     { transition-duration: .3s; }
+.intro.is-skip .intro-text      { animation-duration: .32s; }
+.intro.is-skip .intro-star svg  { animation-delay: .12s; animation-duration: .3s; }
+
+/* przycisk „Przejdź dalej” – niepozorny, w rogu */
+.intro-skip {
+  position: absolute;
+  right: 16px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  background: rgba(253, 247, 238, .06);
+  border: 1px solid rgba(245, 239, 227, .18);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-radius: 100px;
+  color: rgba(245, 239, 227, .72);
+  font-family: var(--ff-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.intro-skip:hover { background: rgba(232, 184, 75, .14); color: var(--clr-gold); }
+
+/* stagger pierwszych elementów po otwarciu zasuwek */
+body.intro-out .top-weather-bar              { animation: siteDrop .55s .05s both var(--ease-out); }
+body.intro-out .header-inner                 { animation: siteDrop .55s .14s both var(--ease-out); }
+body.intro-out #map                          { animation: siteFade .7s .08s both var(--ease-smooth); }
+body.intro-out .leaflet-bottom.leaflet-right { animation: siteRise .5s .3s both var(--ease-smooth); }
+@keyframes siteDrop { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes siteRise { from { opacity: 0; transform: translateY(12px); }  to { opacity: 1; transform: none; } }
+@keyframes siteFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* skip: szybszy scenariusz */
+body.intro-out.intro-skip .top-weather-bar,
+body.intro-out.intro-skip .header-inner,
+body.intro-out.intro-skip #map,
+body.intro-out.intro-skip .leaflet-bottom.leaflet-right {
+  animation-duration: .35s;
+  animation-delay: .06s;
+}
+

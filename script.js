@@ -889,6 +889,98 @@ function maybeShowHint() {
   }, 2500);
 }
 
+/* ── HERO SPLASH: WPROWADZENIE DO POZNANIU ───────────────── */
+/*
+   Reguła „nie nadrywać”: animacja odtwarza się tylko przy
+   pierwszym wejściu (localStorage: hasSeenIntro).
+   Ponowny podgląd: otwórz adres z parametrem ?intro=1
+   (np. index.html?intro=1) lub wyczyść localStorage.
+*/
+const INTRO_SEEN_KEY = 'hasSeenIntro';
+
+(function initIntro() {
+  const root    = document.getElementById('intro');
+  const skipBtn = document.getElementById('intro-skip');
+  if (!root || !skipBtn) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let forced = false;
+  try { forced = new URLSearchParams(window.location.search).has('intro'); } catch (e) { /* ignore */ }
+
+  let firstVisit = true;
+  try { firstVisit = !localStorage.getItem(INTRO_SEEN_KEY); } catch (e) { /* tryb prywatny */ }
+
+  /* Zwrot gościa / oszczędny ruch – konsekwentnie pomijamy intro */
+  if (reduceMotion || (!firstVisit && !forced)) {
+    root.remove();
+    return;
+  }
+
+  /* Zapamiętujmy od razu – brak ponownego odtwarzania po F5 */
+  try { localStorage.setItem(INTRO_SEEN_KEY, '1'); } catch (e) { /* ignore */ }
+
+  let timers = [];
+  let finishing = false;
+
+  const cancelTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+  /* Kompleksowe zamknięcie: fade + usunięcie z DOM */
+  const finish = () => {
+    if (finishing) return;
+    finishing = true;
+    cancelTimers();
+    document.removeEventListener('keydown', onEsc);
+    document.removeEventListener('keydown', trapFocus);
+    root.classList.add('is-gone');
+    document.body.classList.remove('intro-active');
+    setTimeout(() => {
+      root.remove();
+      document.body.classList.remove('intro-out', 'intro-skip');
+    }, 340);
+  };
+
+  /* „Przejdź dalej” / Esc – natychmiastowe szybkie zamknięcie */
+  const finishNow = () => {
+    if (finishing) return;
+    cancelTimers();
+    root.classList.add('is-drawing', 'is-butt', 'is-burst', 'is-text', 'is-closing', 'is-skip');
+    document.body.classList.add('intro-out', 'intro-skip');
+    setTimeout(finish, 400);
+  };
+
+  const onEsc = (e) => { if (e.key === 'Escape') finishNow(); };
+
+  /* trap focusu: Tab krąży wewnątrz zastrzaski (jedyne interakcje: „Przejdź dalej”) */
+  const trapFocus = (e) => {
+    if (!finishing && e.key === 'Tab' && e.target === skipBtn) {
+      e.preventDefault();
+      skipBtn.focus();
+    }
+  };
+
+  root.classList.add('is-live');
+  /* blokada strony: scroll + focus wewnątrz zastrzaski + aria-hidden reszty UI */
+  document.body.classList.add('intro-active');
+  document.addEventListener('keydown', onEsc);
+  document.addEventListener('keydown', trapFocus);
+  skipBtn.addEventListener('click', finishNow);
+  skipBtn.focus();
+
+  /* Scenariusz (~2.8 s): rysunek → koziołki → iskra → napis → zasuwki */
+  timers = [
+    setTimeout(() => root.classList.add('is-drawing'), 80),    // rysunek linii
+    setTimeout(() => root.classList.add('is-butt'),    1900),  // kontakt rogami
+    setTimeout(() => root.classList.add('is-burst'),   2000),  // mikro-salut
+    setTimeout(() => root.classList.add('is-text'),    2150),  // napis + gwiazda
+    setTimeout(() => {
+      root.classList.add('is-closing');
+      document.body.classList.add('intro-out');        // stagger strony
+    }, 2780),
+    setTimeout(finish, 3560),
+  ];
+})();
+
 /* ── START ─────────────────────────────────────────────────── */
 
 loadData();
