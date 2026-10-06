@@ -494,15 +494,15 @@ if (dom.routeClear) {
 
 function flyToPlace(loc) {
   const mobile = window.matchMedia('(max-width: 768px)').matches;
-  const zoom = Math.max(map.getZoom(), 16);
+  const zoom = 17;
   const latlng = L.latLng(loc.lat, loc.lng);
   if (!mobile) {
-    map.flyTo(latlng, zoom, { duration: 0.9, easeLinearity: 0.22 });
+    map.flyTo(latlng, zoom, { duration: 1.2, easeLinearity: 0.25 });
     return;
   }
   const point = map.project(latlng, zoom);
-  point.y += map.getSize().y * 0.22;
-  map.flyTo(map.unproject(point, zoom), zoom, { duration: 0.9, easeLinearity: 0.22 });
+  point.y += map.getSize().y * 0.25;
+  map.flyTo(map.unproject(point, zoom), zoom, { duration: 1.2, easeLinearity: 0.25 });
 }
 
 function goToLocation(loc) {
@@ -673,6 +673,7 @@ function buildGallery(loc) {
       speed: 480,
       effect: 'fade',
       fadeEffect: { crossFade: true },
+      autoplay: false,
       navigation: {
         prevEl: '.swiper-button-prev',
         nextEl: '.swiper-button-next',
@@ -1056,6 +1057,15 @@ if (lbStage) {
   };
   lbStage.addEventListener('pointerup', endPointer);
   lbStage.addEventListener('pointercancel', endPointer);
+
+  lbStage.addEventListener('dblclick', (e) => {
+    if (!lightbox.open) return;
+    if (lightbox.scale > 1) {
+      resetLightboxZoom();
+    } else {
+      zoomLightboxAt(e.clientX, e.clientY, 2);
+    }
+  });
 }
 
 const lbClose = $('#lightbox-close');

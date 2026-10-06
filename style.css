@@ -718,6 +718,8 @@ body.dark-theme #map .leaflet-tile {
   object-fit: cover;
   display: block;
   cursor: zoom-in;
+  animation: none !important;
+  transition: none !important;
 }
 
 .modal-gallery-counter {
@@ -817,7 +819,7 @@ body.dark-theme #map .leaflet-tile {
 .modal-btn-wide { grid-column: 1 / -1; }
 .modal-btn-pdf   { background: #53694f; }
 .modal-btn-gmaps { background: #1a73e8; }
-.modal-btn-icon { font-size: 16px; }
+.modal-btn-icon { font-size: 16px; line-height: 1; }
 
 .modal-coords {
   margin-top: 18px;
@@ -871,6 +873,7 @@ body.dark-theme #map .leaflet-tile {
   inset: 0;
   overflow: hidden;
   cursor: zoom-in;
+  touch-action: none;
 }
 .lightbox-stage img {
   position: absolute;
@@ -885,6 +888,7 @@ body.dark-theme #map .leaflet-tile {
   user-select: none;
   -webkit-user-drag: none;
   will-change: transform;
+  pointer-events: none;
 }
 .lightbox-btn {
   position: absolute;
@@ -898,9 +902,17 @@ body.dark-theme #map .leaflet-tile {
   font-size: 28px;
   line-height: 1;
   cursor: pointer;
-  transition: background var(--dur-fast), color var(--dur-fast);
+  transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.lightbox-btn:hover { background: rgba(20, 12, 4, .85); color: var(--clr-gold); }
+.lightbox-btn:hover {
+  background: rgba(20, 12, 4, .85);
+  color: var(--clr-gold);
+  transform: scale(1.08);
+}
+.lightbox-btn:active { transform: scale(.94); }
 .lightbox-close { top: 16px; right: 16px; font-size: 30px; }
 .lightbox-prev { left: 12px; top: 50%; transform: translateY(-50%); }
 .lightbox-next { right: 12px; top: 50%; transform: translateY(-50%); }
@@ -951,6 +963,8 @@ body.dark-theme .leaflet-control-attribution { background: rgba(35, 26, 19, .85)
 body.dark-theme .route-btn-gmaps { background: #232a33; color: #7fb3ff; border-color: rgba(127, 179, 255, .35); }
 body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
 body.dark-theme .sidebar-title { color: #fff; }
+body.dark-theme .modal-btn-pdf { background: #6b8e6b; }
+body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
 
 /* ── 14. RESPONSYWNOŚĆ ───────────────────────────────────── */
 /* desktop: modal jako kartka w centrum, nie bottom-sheet */
@@ -989,10 +1003,14 @@ body.dark-theme .sidebar-title { color: #fff; }
   }
   .modal-gallery { height: 220px; }
   .modal-title { font-size: 24px; }
-  .modal-actions { grid-template-columns: 1fr; }
+  .modal-actions { grid-template-columns: 1fr; gap: 12px; }
 }
 @media (max-width: 420px) {
   .modal-gallery { height: 190px; }
+}
+
+@media (min-width: 769px) {
+  .modal-actions { grid-template-columns: 1fr 1fr; }
 }
 
 /* ── 15. PREFERENCJE RUCHU ───────────────────────────────── */
