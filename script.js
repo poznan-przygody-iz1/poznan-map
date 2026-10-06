@@ -609,7 +609,11 @@ function openModal(id) {
   dom.pdfLink.href = hasPdf ? loc.pdf : '#';
   dom.gmapsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`;
   /* gdy brak PDF, przycisk trasy zajmuje cały rząd */
-  dom.gmapsLink.classList.toggle('modal-btn-wide', !hasPdf);
+  if (!hasPdf) {
+    dom.gmapsLink.style.gridColumn = '1 / -1';
+  } else {
+    dom.gmapsLink.style.gridColumn = '';
+  }
 
   buildGallery(loc);
   syncModalFav();

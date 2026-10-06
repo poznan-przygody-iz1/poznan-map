@@ -788,36 +788,60 @@ body.dark-theme #map .leaflet-tile {
 .modal-description { font-size: 15px; line-height: 1.7; font-weight: 300; color: var(--clr-ink-soft); }
 
 /* akcje */
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  width: 100%;
+.action-buttons-wrapper {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   margin-top: 22px;
 }
-.modal-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+
+.action-buttons-wrapper a,
+.action-buttons-wrapper button {
+  width: 100% !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 8px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
   gap: 8px;
-  flex: 1;
-  min-height: 50px;
-  height: 50px;
-  padding: 0 14px;
   border-radius: var(--radius-md);
   color: #fff;
   text-decoration: none;
-  font-size: 13.5px;
   font-weight: 500;
-  box-sizing: border-box;
   box-shadow: var(--shadow-1);
   transition: transform var(--dur-fast), box-shadow var(--dur-fast), filter var(--dur-fast);
 }
-.modal-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); filter: brightness(1.06); }
-.modal-btn:active { transform: translateY(0); }
-.modal-btn-wide { flex: 1; }
-.modal-btn-pdf   { background: #53694f; }
+
+.action-buttons-wrapper a:hover,
+.action-buttons-wrapper button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+  filter: brightness(1.06);
+}
+
+.action-buttons-wrapper a:active,
+.action-buttons-wrapper button:active {
+  transform: translateY(0);
+}
+
+.modal-btn-pdf { background: #53694f; }
 .modal-btn-gmaps { background: #1a73e8; }
 .modal-btn-icon { font-size: 16px; line-height: 1; }
+
+/* Для совместимости со старым классом */
+.modal-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin-top: 22px;
+}
 
 .modal-coords {
   margin-top: 18px;
@@ -1001,7 +1025,12 @@ body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
   }
   .modal-gallery { height: 220px; }
   .modal-title { font-size: 24px; }
-  .modal-actions { flex-direction: column; gap: 12px; }
+  .action-buttons-wrapper {
+    grid-template-columns: 1fr !important;
+  }
+  .modal-actions {
+    grid-template-columns: 1fr !important;
+  }
 }
 @media (max-width: 420px) {
   .modal-gallery { height: 190px; }
