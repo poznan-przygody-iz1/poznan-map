@@ -593,7 +593,6 @@ body.dark-theme #map .leaflet-tile {
 }
 .route-empty { font-size: 12.5px; color: var(--clr-sepia-soft); padding: 4px 0; }
 .route-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-.action-buttons-wrapper.route-actions { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; margin-top: 12px !important; }
 .route-btn {
   display: inline-flex;
   align-items: center;
@@ -610,34 +609,6 @@ body.dark-theme #map .leaflet-tile {
 .route-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .route-btn-map { background: var(--clr-ink); color: var(--clr-cream); border: 1px solid var(--clr-ink); }
 .route-btn-gmaps { background: #fff; color: #1a73e8; border: 1px solid rgba(26, 115, 232, .35); }
-
-/* Перекрываем стили route-btn внутри action-buttons-wrapper */
-.action-buttons-wrapper .route-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  white-space: nowrap !important;
-  padding: 10px 8px !important;
-  font-size: 14px !important;
-  box-sizing: border-box !important;
-  min-height: 42px !important;
-}
-
-/* Перекрываем стили modal-btn внутри action-buttons-wrapper */
-.action-buttons-wrapper .modal-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  white-space: nowrap !important;
-  padding: 10px 8px !important;
-  font-size: 14px !important;
-  box-sizing: border-box !important;
-  min-height: 50px !important;
-}
 
 .sidebar-footer {
   flex-shrink: 0;
