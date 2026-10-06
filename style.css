@@ -650,7 +650,7 @@ body.dark-theme #map .leaflet-tile {
 .modal-panel {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   height: 100%;
   max-height: 100%;
   background: var(--clr-cream);
@@ -795,6 +795,7 @@ body.dark-theme #map .leaflet-tile {
   width: 100% !important;
   box-sizing: border-box !important;
   margin-top: 22px;
+  flex-wrap: nowrap !important;
 }
 
 .action-buttons-wrapper a,
@@ -1001,7 +1002,7 @@ body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
 @media (min-width: 769px) {
   .modal-overlay { padding: 24px; justify-content: center; }
   .modal-panel {
-    width: min(480px, 92vw);
+    width: min(500px, 92vw);
     height: auto;
     max-height: calc(100vh - 48px);
     border-radius: var(--radius-lg);
