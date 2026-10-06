@@ -789,9 +789,9 @@ body.dark-theme #map .leaflet-tile {
 
 /* akcje */
 .modal-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  gap: 12px;
+  width: 100%;
   margin-top: 22px;
 }
 .modal-btn {
@@ -799,7 +799,7 @@ body.dark-theme #map .leaflet-tile {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
+  flex: 1;
   min-height: 50px;
   height: 50px;
   padding: 0 14px;
@@ -814,7 +814,7 @@ body.dark-theme #map .leaflet-tile {
 }
 .modal-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); filter: brightness(1.06); }
 .modal-btn:active { transform: translateY(0); }
-.modal-btn-wide { grid-column: 1 / -1; }
+.modal-btn-wide { flex: 1; }
 .modal-btn-pdf   { background: #53694f; }
 .modal-btn-gmaps { background: #1a73e8; }
 .modal-btn-icon { font-size: 16px; line-height: 1; }
@@ -1001,14 +1001,10 @@ body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
   }
   .modal-gallery { height: 220px; }
   .modal-title { font-size: 24px; }
-  .modal-actions { grid-template-columns: 1fr; gap: 12px; }
+  .modal-actions { flex-direction: column; gap: 12px; }
 }
 @media (max-width: 420px) {
   .modal-gallery { height: 190px; }
-}
-
-@media (min-width: 769px) {
-  .modal-actions { grid-template-columns: 1fr 1fr; }
 }
 
 /* ── 15. PREFERENCJE RUCHU ───────────────────────────────── */
