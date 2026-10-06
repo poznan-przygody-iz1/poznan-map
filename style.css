@@ -790,7 +790,7 @@ body.dark-theme #map .leaflet-tile {
 /* akcje */
 .action-buttons-wrapper {
   display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 10px !important;
   width: 100% !important;
   box-sizing: border-box !important;
@@ -815,6 +815,12 @@ body.dark-theme #map .leaflet-tile {
   font-weight: 500;
   box-shadow: var(--shadow-1);
   transition: transform var(--dur-fast), box-shadow var(--dur-fast), filter var(--dur-fast);
+}
+
+/* Если есть только одна кнопка, растягиваем на всю ширину */
+.action-buttons-wrapper > a:only-child,
+.action-buttons-wrapper > button:only-child {
+  grid-column: 1 / -1 !important;
 }
 
 .action-buttons-wrapper a:hover,
@@ -1025,10 +1031,14 @@ body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
   }
   .modal-gallery { height: 220px; }
   .modal-title { font-size: 24px; }
-  .action-buttons-wrapper {
+  .modal-actions {
     grid-template-columns: 1fr !important;
   }
-  .modal-actions {
+}
+
+/* мобильные устройства: кнопки в один столбец */
+@media (max-width: 600px) {
+  .action-buttons-wrapper {
     grid-template-columns: 1fr !important;
   }
 }
