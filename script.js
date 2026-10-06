@@ -40,6 +40,7 @@ const state = {
   swiper: null,
   currentId: null,
   dataReady: false,
+  galleryImages: [],
 };
 
 /* ── POMOCNICY DOM ─────────────────────────────────────────── */
@@ -61,6 +62,7 @@ const dom = {
   routeSteps:    $('#route-steps'),
   routeMapBtn:   $('#route-map-btn'),
   routeGmaps:    $('#route-gmaps-link'),
+  routeClear:    $('#route-clear'),
   overlay:       $('#modal-overlay'),
   panel:         $('#modal-panel'),
   modalClose:    $('#modal-close'),
@@ -75,7 +77,6 @@ const dom = {
   swiperWrap:    $('#swiper-wrapper'),
   galCurrent:    $('#gallery-current'),
   galTotal:      $('#gallery-total'),
-  loadScreen:    $('#loading-screen'),
   toast:         $('#toast'),
   themeToggle:   $('#theme-toggle'),
   weatherIcon:   $('#weather-icon'),
@@ -275,7 +276,10 @@ function renderMarkers(locations) {
     });
 
     const marker = L.marker([loc.lat, loc.lng], { icon, title: loc.title, riseOnHover: true });
-    marker.on('click', () => openModal(loc.id));
+    marker.on('click', () => {
+      flyToPlace(loc);
+      openModal(loc.id);
+    });
 
     state.markers.set(loc.id, marker);
   });
@@ -393,8 +397,11 @@ function updateRouteCard() {
         <li class="route-step">
           <span class="route-step-num">${i + 1}</span>
           <span class="route-step-name">${escapeHtml(loc.title)}</span>
+          <button class="route-step-remove" type="button" data-id="${escapeHtml(loc.id)}" aria-label="Usuń ${escapeHtml(loc.title)}">−</button>
         </li>`).join('')
     : '<li class="route-empty">Dodaj miejsca gwiazdką ★, aby zbudować trasę</li>';
+
+  if (dom.routeClear) dom.routeClear.hidden = favs.length === 0;
 
   dom.routeGmaps.href = gmapsRouteUrl(favs);
   dom.routeMapBtn.textContent = state.routeLayer ? 'Usuń trasę z mapy' : 'Pokaż trasę na mapie';
@@ -459,27 +466,49 @@ if (dom.routeMapBtn) {
   dom.routeMapBtn.addEventListener('click', toggleRoute);
 }
 
+if (dom.routeSteps) {
+  dom.routeSteps.addEventListener('click', (e) => {
+    const btn = e.target.closest('.route-step-remove');
+    if (!btn) return;
+    toggleFavorite(btn.dataset.id);
+  });
+}
+
+if (dom.routeClear) {
+  dom.routeClear.addEventListener('click', () => {
+    if (!state.favorites.length) return;
+    state.favorites = [];
+    saveFavorites();
+    if (state.routeLayer) {
+      map.removeLayer(state.routeLayer);
+      state.routeLayer = null;
+    }
+    updateRouteCard();
+    renderPlaceList();
+    if (state.currentId) syncModalFav();
+    showToast('Trasę wyczyszczono');
+  });
+}
+
 /* ── NAWIGACJA DO MIEJSCA ─────────────────────────────────── */
+
+function flyToPlace(loc) {
+  const mobile = window.matchMedia('(max-width: 768px)').matches;
+  const zoom = Math.max(map.getZoom(), 16);
+  const latlng = L.latLng(loc.lat, loc.lng);
+  if (!mobile) {
+    map.flyTo(latlng, zoom, { duration: 0.9, easeLinearity: 0.22 });
+    return;
+  }
+  const point = map.project(latlng, zoom);
+  point.y += map.getSize().y * 0.22;
+  map.flyTo(map.unproject(point, zoom), zoom, { duration: 0.9, easeLinearity: 0.22 });
+}
 
 function goToLocation(loc) {
   closeSidebar();
-  const target = [loc.lat, loc.lng];
-
-  let opened = false;
-  const open = () => {
-    if (opened) return;
-    opened = true;
-    openModal(loc.id);
-  };
-
-  if (map.getBounds().contains(target)) {
-    open();
-    return;
-  }
-
-  map.on('moveend', open, { once: true });
-  map.flyTo(target, 16, { duration: 1.1 });
-  setTimeout(open, 1600); // zapas, gdyby moveend nie wybił
+  flyToPlace(loc);
+  openModal(loc.id);
 }
 
 /* ── WYSZUKIWARKA ─────────────────────────────────────────── */
@@ -616,6 +645,7 @@ function fallbackImageSrc(title, color) {
 
 function buildGallery(loc) {
   const images = Array.isArray(loc.images) ? loc.images : [];
+  state.galleryImages = images;
 
   dom.swiperWrap.innerHTML = images.map((src, i) => `
     <div class="swiper-slide">
@@ -673,6 +703,14 @@ dom.modalClose.addEventListener('click', closeModal);
 dom.overlay.addEventListener('click', (e) => {
   if (e.target === dom.overlay) closeModal();
 });
+
+if (dom.swiperWrap) {
+  dom.swiperWrap.addEventListener('click', (e) => {
+    if (!e.target.closest('img') || !state.galleryImages.length) return;
+    const idx = state.swiper ? state.swiper.realIndex : 0;
+    openLightbox(idx);
+  });
+}
 
 /* fokus nie ucieka poza modal */
 dom.overlay.addEventListener('keydown', (e) => {
@@ -741,6 +779,12 @@ dom.overlay.addEventListener('keydown', (e) => {
 /* ── KLAWIATURA: ESC ZAMYKA MODAL, POTEM MENU ─────────────── */
 
 document.addEventListener('keydown', (e) => {
+  if (lightbox.open) {
+    if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); lightboxNav(-1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); lightboxNav(1); }
+    return;
+  }
   if (e.key !== 'Escape') return;
   if (dom.overlay.classList.contains('is-open')) closeModal();
   else if (dom.sidebar.classList.contains('is-open')) closeSidebar();
@@ -837,8 +881,7 @@ function applyTheme(theme) {
 (function initTheme() {
   let saved = null;
   try { saved = localStorage.getItem(THEME_KEY); } catch { /* prywatny tryb */ }
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(saved === 'dark' || saved === 'light' ? saved : (prefersDark ? 'dark' : 'light'));
+  applyTheme(saved === 'dark' || saved === 'light' ? saved : 'light');
 })();
 
 dom.themeToggle.addEventListener('click', () => {
@@ -847,18 +890,10 @@ dom.themeToggle.addEventListener('click', () => {
 
 /* ── EKRAN ŁADOWANIA ─────────────────────────────────────── */
 
-const LOAD_MIN_MS = 1100;
-const loadStart = Date.now();
-let loadDone = false;
+let onPreloaderDataReady = null;
 
 function dismissLoadingScreen() {
-  loadDone = true;
-  const wait = Math.max(0, LOAD_MIN_MS - (Date.now() - loadStart));
-  setTimeout(() => {
-    if (!dom.loadScreen) return;
-    dom.loadScreen.classList.add('is-gone');
-    dom.loadScreen.addEventListener('transitionend', () => dom.loadScreen.remove(), { once: true });
-  }, wait);
+  if (typeof onPreloaderDataReady === 'function') onPreloaderDataReady();
 }
 
 function showDataError() {
@@ -889,95 +924,222 @@ function maybeShowHint() {
   }, 2500);
 }
 
-/* ── HERO SPLASH: WPROWADZENIE DO POZNANIU ───────────────── */
-/*
-   Reguła „nie nadrywać”: animacja odtwarza się tylko przy
-   pierwszym wejściu (localStorage: hasSeenIntro).
-   Ponowny podgląd: otwórz adres z parametrem ?intro=1
-   (np. index.html?intro=1) lub wyczyść localStorage.
-*/
-const INTRO_SEEN_KEY = 'hasSeenIntro';
+/* ── LIGHTBOX ─────────────────────────────────────────────── */
+
+const lightbox = {
+  open: false,
+  index: 0,
+  scale: 1,
+  x: 0,
+  y: 0,
+  pointers: new Map(),
+  pinchStart: 0,
+  pinchScale: 1,
+  panX: 0,
+  panY: 0,
+};
+
+const lbRoot  = $('#lightbox');
+const lbStage = $('#lightbox-stage');
+const lbImg   = $('#lightbox-img');
+
+function applyLightboxTransform() {
+  if (!lbImg) return;
+  lbImg.style.transform = `translate(calc(-50% + ${lightbox.x}px), calc(-50% + ${lightbox.y}px)) scale(${lightbox.scale})`;
+  if (lbStage) lbStage.style.cursor = lightbox.scale > 1 ? 'grab' : 'zoom-in';
+}
+
+function resetLightboxZoom() {
+  lightbox.scale = 1;
+  lightbox.x = 0;
+  lightbox.y = 0;
+  applyLightboxTransform();
+}
+
+function showLightboxImage() {
+  const src = state.galleryImages[lightbox.index];
+  if (!src || !lbImg) return;
+  lbImg.src = src;
+  lbImg.alt = `${dom.title.textContent} — zdjęcie ${lightbox.index + 1}`;
+  resetLightboxZoom();
+  if (lbRoot) lbRoot.classList.toggle('is-single', state.galleryImages.length < 2);
+}
+
+function openLightbox(index) {
+  if (!lbRoot || !state.galleryImages.length) return;
+  lightbox.open = true;
+  lightbox.index = index;
+  showLightboxImage();
+  lbRoot.hidden = false;
+  lbRoot.classList.add('is-open');
+}
+
+function closeLightbox() {
+  if (!lbRoot || !lightbox.open) return;
+  lightbox.open = false;
+  lightbox.pointers.clear();
+  lbRoot.classList.remove('is-open');
+  lbRoot.hidden = true;
+  resetLightboxZoom();
+}
+
+function lightboxNav(dir) {
+  const n = state.galleryImages.length;
+  if (n < 2) return;
+  lightbox.index = (lightbox.index + dir + n) % n;
+  showLightboxImage();
+  if (state.swiper) state.swiper.slideToLoop(lightbox.index);
+}
+
+function zoomLightboxAt(clientX, clientY, nextScale) {
+  const prev = lightbox.scale;
+  const scale = Math.min(5, Math.max(1, nextScale));
+  if (scale === prev) return;
+  const rect = lbStage.getBoundingClientRect();
+  const ox = clientX - rect.left;
+  const oy = clientY - rect.top;
+  const cx = rect.width / 2;
+  const cy = rect.height / 2;
+  const factor = scale / prev;
+  lightbox.x = (ox - cx) - ((ox - cx) - lightbox.x) * factor;
+  lightbox.y = (oy - cy) - ((oy - cy) - lightbox.y) * factor;
+  lightbox.scale = scale;
+  if (scale === 1) { lightbox.x = 0; lightbox.y = 0; }
+  applyLightboxTransform();
+}
+
+if (lbStage) {
+  lbStage.addEventListener('wheel', (e) => {
+    if (!lightbox.open) return;
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    zoomLightboxAt(e.clientX, e.clientY, lightbox.scale * factor);
+  }, { passive: false });
+
+  lbStage.addEventListener('pointerdown', (e) => {
+    if (!lightbox.open) return;
+    lbStage.setPointerCapture(e.pointerId);
+    lightbox.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (lightbox.pointers.size === 2) {
+      const pts = [...lightbox.pointers.values()];
+      lightbox.pinchStart = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      lightbox.pinchScale = lightbox.scale;
+    } else {
+      lightbox.panX = e.clientX;
+      lightbox.panY = e.clientY;
+    }
+  });
+
+  lbStage.addEventListener('pointermove', (e) => {
+    if (!lightbox.open || !lightbox.pointers.has(e.pointerId)) return;
+    lightbox.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (lightbox.pointers.size === 2) {
+      const pts = [...lightbox.pointers.values()];
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      if (lightbox.pinchStart > 0) {
+        const midX = (pts[0].x + pts[1].x) / 2;
+        const midY = (pts[0].y + pts[1].y) / 2;
+        zoomLightboxAt(midX, midY, lightbox.pinchScale * (dist / lightbox.pinchStart));
+      }
+    } else if (lightbox.scale > 1) {
+      lightbox.x += e.clientX - lightbox.panX;
+      lightbox.y += e.clientY - lightbox.panY;
+      lightbox.panX = e.clientX;
+      lightbox.panY = e.clientY;
+      applyLightboxTransform();
+    }
+  });
+
+  const endPointer = (e) => {
+    lightbox.pointers.delete(e.pointerId);
+    if (lightbox.pointers.size < 2) lightbox.pinchStart = 0;
+  };
+  lbStage.addEventListener('pointerup', endPointer);
+  lbStage.addEventListener('pointercancel', endPointer);
+}
+
+const lbClose = $('#lightbox-close');
+const lbPrev  = $('#lightbox-prev');
+const lbNext  = $('#lightbox-next');
+if (lbClose) lbClose.addEventListener('click', closeLightbox);
+if (lbPrev)  lbPrev.addEventListener('click', () => lightboxNav(-1));
+if (lbNext)  lbNext.addEventListener('click', () => lightboxNav(1));
+
+/* ── HERO SPLASH / PRELOADER ──────────────────────────────── */
 
 (function initIntro() {
-  const root    = document.getElementById('intro');
-  const skipBtn = document.getElementById('intro-skip');
-  if (!root || !skipBtn) return;
-
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  let forced = false;
-  try { forced = new URLSearchParams(window.location.search).has('intro'); } catch (e) { /* ignore */ }
-
-  let firstVisit = true;
-  try { firstVisit = !localStorage.getItem(INTRO_SEEN_KEY); } catch (e) { /* tryb prywatny */ }
-
-  /* Zwrot gościa / oszczędny ruch – konsekwentnie pomijamy intro */
-  if (reduceMotion || (!firstVisit && !forced)) {
-    root.remove();
+  const root = document.getElementById('intro');
+  if (!root) {
+    document.body.classList.remove('intro-active');
     return;
   }
 
-  /* Zapamiętujmy od razu – brak ponownego odtwarzania po F5 */
-  try { localStorage.setItem(INTRO_SEEN_KEY, '1'); } catch (e) { /* ignore */ }
+  const fill = document.getElementById('intro-progress-fill');
+  const icon = document.getElementById('intro-progress-icon');
+  const bar  = document.getElementById('intro-progress');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let timers = [];
+  let dataReady = state.dataReady;
+  let sceneDone = false;
   let finishing = false;
+  let timers = [];
+  let progress = 0;
+
+  const setProgress = (value) => {
+    progress = Math.max(progress, Math.min(100, value));
+    if (fill) fill.style.transform = `scaleX(${progress / 100})`;
+    if (icon) icon.style.left = `${progress}%`;
+    if (bar) bar.setAttribute('aria-valuenow', String(Math.round(progress)));
+  };
 
   const cancelTimers = () => { timers.forEach(clearTimeout); timers = []; };
 
-  /* Kompleksowe zamknięcie: fade + usunięcie z DOM */
   const finish = () => {
     if (finishing) return;
     finishing = true;
     cancelTimers();
-    document.removeEventListener('keydown', onEsc);
-    document.removeEventListener('keydown', trapFocus);
-    root.classList.add('is-gone');
-    document.body.classList.remove('intro-active');
+    setProgress(100);
+    root.classList.add('is-closing');
+    document.body.classList.add('intro-out');
     setTimeout(() => {
-      root.remove();
-      document.body.classList.remove('intro-out', 'intro-skip');
-    }, 340);
+      root.classList.add('is-gone');
+      document.body.classList.remove('intro-active');
+      map.invalidateSize();
+      setTimeout(() => {
+        root.remove();
+        document.body.classList.remove('intro-out');
+      }, 280);
+    }, 520);
   };
 
-  /* „Przejdź dalej” / Esc – natychmiastowe szybkie zamknięcie */
-  const finishNow = () => {
-    if (finishing) return;
-    cancelTimers();
-    root.classList.add('is-drawing', 'is-butt', 'is-burst', 'is-text', 'is-closing', 'is-skip');
-    document.body.classList.add('intro-out', 'intro-skip');
-    setTimeout(finish, 400);
+  const tryFinish = () => {
+    if (dataReady && sceneDone) finish();
   };
 
-  const onEsc = (e) => { if (e.key === 'Escape') finishNow(); };
-
-  /* trap focusu: Tab krąży wewnątrz zastrzaski (jedyne interakcje: „Przejdź dalej”) */
-  const trapFocus = (e) => {
-    if (!finishing && e.key === 'Tab' && e.target === skipBtn) {
-      e.preventDefault();
-      skipBtn.focus();
-    }
+  onPreloaderDataReady = () => {
+    dataReady = true;
+    setProgress(Math.max(progress, 92));
+    tryFinish();
   };
 
-  root.classList.add('is-live');
-  /* blokada strony: scroll + focus wewnątrz zastrzaski + aria-hidden reszty UI */
-  document.body.classList.add('intro-active');
-  document.addEventListener('keydown', onEsc);
-  document.addEventListener('keydown', trapFocus);
-  skipBtn.addEventListener('click', finishNow);
-  skipBtn.focus();
+  if (reduceMotion) {
+    root.classList.add('is-drawing', 'is-text');
+    sceneDone = true;
+    setProgress(dataReady ? 100 : 70);
+    tryFinish();
+    return;
+  }
 
-  /* Scenariusz (~2.8 s): rysunek → koziołki → iskra → napis → zasuwki */
   timers = [
-    setTimeout(() => root.classList.add('is-drawing'), 80),    // rysunek linii
-    setTimeout(() => root.classList.add('is-butt'),    1900),  // kontakt rogami
-    setTimeout(() => root.classList.add('is-burst'),   2000),  // mikro-salut
-    setTimeout(() => root.classList.add('is-text'),    2150),  // napis + gwiazda
+    setTimeout(() => { root.classList.add('is-drawing'); setProgress(22); }, 40),
+    setTimeout(() => { root.classList.add('is-butt'); setProgress(55); }, 1600),
+    setTimeout(() => { root.classList.add('is-burst'); setProgress(68); }, 1680),
+    setTimeout(() => { root.classList.add('is-text'); setProgress(82); }, 1820),
     setTimeout(() => {
-      root.classList.add('is-closing');
-      document.body.classList.add('intro-out');        // stagger strony
-    }, 2780),
-    setTimeout(finish, 3560),
+      sceneDone = true;
+      setProgress(dataReady ? 100 : 90);
+      tryFinish();
+    }, 2480),
   ];
 })();
 

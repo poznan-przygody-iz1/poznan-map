@@ -37,7 +37,7 @@
   }
   </script>
 </head>
-<body>
+<body class="intro-active">
   <a class="skip-link" href="#sidebar">Przejdź do menu</a>
 
   <!-- ── PASEK POGODY ─────────────────────────────────────── -->
@@ -85,7 +85,7 @@
   <aside class="sidebar" id="sidebar" aria-label="Menu przewodnika">
     <div class="sidebar-header">
       <div class="sidebar-heading">
-        <h2 class="sidebar-title">Kategorie</h2>
+        <h2 class="sidebar-title">POZNAŃ</h2>
         <p class="sidebar-subtitle">Interaktywny przewodnik po Poznaniu</p>
       </div>
       <button class="icon-btn sidebar-close" id="sidebar-close" type="button" aria-label="Zamknij menu">
@@ -119,6 +119,7 @@
             <h3 class="route-card-title">Moja trasa</h3>
             <p class="route-card-sub" id="route-count">0 miejsc</p>
           </div>
+          <button class="route-clear" id="route-clear" type="button" hidden>Wyczyść wszystko</button>
         </div>
         <ol class="route-steps" id="route-steps"></ol>
         <div class="route-actions">
@@ -188,7 +189,7 @@
         <p class="modal-description" id="modal-description"></p>
 
         <div class="modal-actions">
-          <a id="modal-gmaps" class="modal-btn modal-btn-wide modal-btn-gmaps" target="_blank" rel="noopener">
+          <a id="modal-gmaps" class="modal-btn modal-btn-gmaps" target="_blank" rel="noopener">
             <span class="modal-btn-icon" aria-hidden="true">🗺️</span> Jak dojechać?
           </a>
           <a id="modal-pdf" class="modal-btn modal-btn-pdf" target="_blank" rel="noopener" hidden>
@@ -205,7 +206,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <!-- ── HERO SPLASH: WPROWADZENIE DO POZNANIU ─────────────── -->
-  <div id="intro" class="intro">
+  <div id="intro" class="intro is-live">
     <div class="intro-sky" aria-hidden="true"></div>
     <div class="intro-shade intro-shade-top" aria-hidden="true"></div>
     <div class="intro-shade intro-shade-bottom" aria-hidden="true"></div>
@@ -290,16 +291,38 @@
       </p>
     </div>
 
-    <button class="intro-skip" id="intro-skip" type="button">Przejdź dalej <span aria-hidden="true">→</span></button>
+    <div class="intro-progress" id="intro-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Ładowanie mapy">
+      <div class="intro-progress-track">
+        <div class="intro-progress-fill" id="intro-progress-fill"></div>
+        <span class="intro-progress-icon" id="intro-progress-icon" aria-hidden="true">
+          <svg viewBox="0 0 36 20" fill="none">
+            <!-- Корпус трамвая Bimba -->
+            <rect x="2" y="6" width="32" height="10" rx="2" fill="#e8b84b"/>
+            <!-- Окна -->
+            <rect x="5" y="8" width="7" height="4" rx="0.5" fill="#0d1117"/>
+            <rect x="14" y="8" width="7" height="4" rx="0.5" fill="#0d1117"/>
+            <rect x="23" y="8" width="7" height="4" rx="0.5" fill="#0d1117"/>
+            <!-- Пантограф -->
+            <path d="M12 6 L12 2 L18 2 L18 6" stroke="#e8b84b" stroke-width="1.2" fill="none"/>
+            <!-- Колёса -->
+            <circle cx="8" cy="18" r="2" fill="#f5efe3"/>
+            <circle cx="8" cy="18" r="0.8" fill="#0d1117"/>
+            <circle cx="28" cy="18" r="2" fill="#f5efe3"/>
+            <circle cx="28" cy="18" r="0.8" fill="#0d1117"/>
+          </svg>
+        </span>
+      </div>
+    </div>
   </div>
 
-  <!-- ── EKRAN ŁADOWANIA ──────────────────────────────────── -->
-  <div id="loading-screen" class="loading-screen">
-    <div class="loading-inner">
-      <div class="loading-logo"><span class="logo-poz">POZ</span><span class="logo-nan">NAN</span></div>
-      <div class="loading-bar" aria-hidden="true"><div class="loading-bar-fill"></div></div>
-      <p class="loading-text">Ładowanie mapy…</p>
+  <!-- ── LIGHTBOX: PEŁNY EKRAN ──────────────────────────────── -->
+  <div id="lightbox" class="lightbox" hidden>
+    <div class="lightbox-stage" id="lightbox-stage">
+      <img id="lightbox-img" alt="" draggable="false" />
     </div>
+    <button class="lightbox-btn lightbox-close" id="lightbox-close" type="button" aria-label="Zamknij">×</button>
+    <button class="lightbox-btn lightbox-prev" id="lightbox-prev" type="button" aria-label="Poprzednie zdjęcie">‹</button>
+    <button class="lightbox-btn lightbox-next" id="lightbox-next" type="button" aria-label="Następne zdjęcie">›</button>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
