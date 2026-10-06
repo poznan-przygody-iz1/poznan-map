@@ -526,19 +526,25 @@ body.dark-theme #map .leaflet-tile {
 .route-clear {
   margin-left: auto;
   flex-shrink: 0;
-  padding: 6px 10px;
+  padding: 7px 12px;
   border: 1px solid rgba(122, 92, 56, .28);
   border-radius: 100px;
   background: transparent;
   color: var(--clr-sepia);
   font-family: var(--ff-body);
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: .04em;
   cursor: pointer;
-  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
 }
-.route-clear:hover { background: rgba(192, 57, 43, .1); color: #c0392b; border-color: rgba(192, 57, 43, .35); }
+.route-clear:hover {
+  background: rgba(192, 57, 43, .1);
+  color: #c0392b;
+  border-color: rgba(192, 57, 43, .35);
+  transform: scale(1.02);
+}
+.route-clear:active { transform: scale(.96); }
 .route-card-emoji { font-size: 22px; }
 .route-card-title { font-family: var(--ff-display); font-size: 16px; font-weight: 700; }
 .route-card-sub { font-size: 11.5px; color: var(--clr-sepia-soft); margin-top: 1px; }
@@ -554,7 +560,7 @@ body.dark-theme #map .leaflet-tile {
 .route-step { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .route-step-name { flex: 1; min-width: 0; }
 .route-step-remove {
-  width: 22px; height: 22px;
+  width: 24px; height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -563,12 +569,18 @@ body.dark-theme #map .leaflet-tile {
   border-radius: 50%;
   background: transparent;
   color: var(--clr-sepia);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
 }
-.route-step-remove:hover { background: rgba(192, 57, 43, .12); color: #c0392b; border-color: rgba(192, 57, 43, .4); }
+.route-step-remove:hover {
+  background: rgba(192, 57, 43, .12);
+  color: #c0392b;
+  border-color: rgba(192, 57, 43, .4);
+  transform: scale(1.08);
+}
+.route-step-remove:active { transform: scale(.92); }
 .route-step-num {
   display: inline-flex;
   align-items: center;
