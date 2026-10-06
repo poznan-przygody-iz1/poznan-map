@@ -554,8 +554,7 @@ body.dark-theme #map .leaflet-tile {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 130px;
-  overflow-y: auto;
+  overflow: visible;
 }
 .route-step { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .route-step-name { flex: 1; min-width: 0; }
@@ -572,15 +571,14 @@ body.dark-theme #map .leaflet-tile {
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
 }
 .route-step-remove:hover {
   background: rgba(192, 57, 43, .12);
   color: #c0392b;
   border-color: rgba(192, 57, 43, .4);
-  transform: scale(1.08);
 }
-.route-step-remove:active { transform: scale(.92); }
+.route-step-remove:active { background: rgba(192, 57, 43, .18); }
 .route-step-num {
   display: inline-flex;
   align-items: center;
