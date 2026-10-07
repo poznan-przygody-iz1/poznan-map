@@ -1094,10 +1094,12 @@ if (lbNext)  lbNext.addEventListener('click', () => lightboxNav(1));
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let dataReady = state.dataReady;
-  let sceneDone = false;
   let finishing = false;
-  let timers = [];
+  let progressInterval = null;
   let progress = 0;
+
+  const TOTAL_DURATION = 5000; // 5 секунд
+  const UPDATE_INTERVAL = 50; // обновление каждые 50ms для плавности
 
   const setProgress = (value) => {
     progress = Math.max(progress, Math.min(100, value));
@@ -1106,12 +1108,10 @@ if (lbNext)  lbNext.addEventListener('click', () => lightboxNav(1));
     if (bar) bar.setAttribute('aria-valuenow', String(Math.round(progress)));
   };
 
-  const cancelTimers = () => { timers.forEach(clearTimeout); timers = []; };
-
   const finish = () => {
     if (finishing) return;
     finishing = true;
-    cancelTimers();
+    if (progressInterval) clearInterval(progressInterval);
     setProgress(100);
     root.classList.add('is-closing');
     document.body.classList.add('intro-out');
@@ -1122,39 +1122,41 @@ if (lbNext)  lbNext.addEventListener('click', () => lightboxNav(1));
       setTimeout(() => {
         root.remove();
         document.body.classList.remove('intro-out');
-      }, 280);
-    }, 520);
-  };
-
-  const tryFinish = () => {
-    if (dataReady && sceneDone) finish();
+      }, 800);
+    }, 800);
   };
 
   onPreloaderDataReady = () => {
     dataReady = true;
-    setProgress(Math.max(progress, 92));
-    tryFinish();
   };
 
   if (reduceMotion) {
     root.classList.add('is-drawing', 'is-text');
-    sceneDone = true;
-    setProgress(dataReady ? 100 : 70);
-    tryFinish();
+    setProgress(100);
+    finish();
     return;
   }
 
-  timers = [
-    setTimeout(() => { root.classList.add('is-drawing'); setProgress(22); }, 40),
-    setTimeout(() => { root.classList.add('is-butt'); setProgress(55); }, 1600),
-    setTimeout(() => { root.classList.add('is-burst'); setProgress(68); }, 1680),
-    setTimeout(() => { root.classList.add('is-text'); setProgress(82); }, 1820),
-    setTimeout(() => {
-      sceneDone = true;
-      setProgress(dataReady ? 100 : 90);
-      tryFinish();
-    }, 2480),
-  ];
+  // ПРИНУДИТЕЛЬНЫЙ СБРОС АНИМАЦИИ ПЕРЕД ЗАПУСКОМ
+  root.classList.remove('is-drawing', 'is-butt', 'is-burst', 'is-text', 'is-closing', 'is-gone');
+  void root.offsetWidth; // Reflow для принудительного сброса CSS-анимаций
+
+  // ПАРАЛЛЕЛЬНЫЙ ЗАПУСК: все анимации стартуют в секунду 0!
+  // CSS delays управляют временем появления элементов (2.0s, 2.5s, 3.0s)
+  root.classList.add('is-drawing', 'is-butt', 'is-burst', 'is-text');
+
+  // Запускаем равномерный прогресс-бар на 5 секунд
+  const startTime = Date.now();
+  progressInterval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const newProgress = Math.min(100, (elapsed / TOTAL_DURATION) * 100);
+    setProgress(newProgress);
+
+    if (elapsed >= TOTAL_DURATION) {
+      clearInterval(progressInterval);
+      finish();
+    }
+  }, UPDATE_INTERVAL);
 })();
 
 /* ── START ─────────────────────────────────────────────────── */

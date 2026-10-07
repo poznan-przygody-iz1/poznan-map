@@ -1107,8 +1107,13 @@ body.dark-theme .modal-btn-gmaps { background: #1a5fb4; }
 .intro.is-gone {
   opacity: 0;
   transform: translateZ(0);
-  transition: opacity .28s ease, transform .28s ease;
+  transition: opacity 0.8s ease;
   pointer-events: none;
+}
+/* Сброс анимаций при перезагрузке */
+.intro:not(.is-live) .intro-svg .draw {
+  animation: none !important;
+  stroke-dashoffset: 1 !important;
 }
 /* blokada strony na czas zastrzaski: scroll + focus wewnątrz + reszta UI dla SR „nieistnieje” */
 body.intro-active { overflow: hidden !important; }
@@ -1174,16 +1179,16 @@ body.intro-active #map {
   stroke-dashoffset: 1;
 }
 .intro.is-drawing .draw {
-  animation: introDraw var(--dd, .8s) cubic-bezier(.6, .05, .3, 1) var(--d, 0s) forwards;
+  animation: introDraw 4.5s ease-in-out forwards;
 }
 @keyframes introDraw { to { stroke-dashoffset: 0; } }
 
 /* koziołki: kontakt rogami */
-.intro.is-butt .goat-left  { animation: introButtL .5s ease-in-out; }
-.intro.is-butt .goat-right { animation: introButtR .5s ease-in-out; }
+.intro.is-butt .goat-left  { animation: introButtL 0.6s ease-in-out 2.0s forwards; opacity: 0; }
+.intro.is-butt .goat-right { animation: introButtR 0.6s ease-in-out 2.0s forwards; opacity: 0; }
 .intro-svg .goat { transform-box: fill-box; }
-@keyframes introButtL { 0%, 100% { transform: translate(0, 0); } 42% { transform: translate(2.6px, -1.6px); } }
-@keyframes introButtR { 0%, 100% { transform: translate(0, 0); } 42% { transform: translate(-2.6px, -1.6px); } }
+@keyframes introButtL { 0%, 100% { transform: translate(0, 0); opacity: 1; } 42% { transform: translate(2.6px, -1.6px); opacity: 1; } }
+@keyframes introButtR { 0%, 100% { transform: translate(0, 0); opacity: 1; } 42% { transform: translate(-2.6px, -1.6px); opacity: 1; } }
 
 /* mikro-salut z punktu styku rogów (274, 66) */
 .intro-flare {
@@ -1192,7 +1197,7 @@ body.intro-active #map {
   transform-origin: center;
 }
 .intro.is-burst .intro-flare {
-  animation: introFlare .65s ease-out forwards;
+  animation: introFlare 0.8s ease-out 2.5s forwards;
 }
 @keyframes introFlare {
   0%   { opacity: .55; transform: scale(.3); }
@@ -1200,7 +1205,7 @@ body.intro-active #map {
 }
 .intro-p { opacity: 0; }
 .intro.is-burst .intro-p {
-  animation: introBurst .9s cubic-bezier(.15, .7, .25, 1) var(--bd, 0s) forwards;
+  animation: introBurst 0.8s cubic-bezier(.15, .7, .25, 1) var(--bd, 0s) 2.5s forwards;
 }
 @keyframes introBurst {
   0%   { opacity: 1;  transform: translate(0, 0) scale(1); }
@@ -1208,7 +1213,7 @@ body.intro-active #map {
   100% { opacity: 0;  transform: translate(var(--bx, 0), var(--by, 0)) scale(.15); }
 }
 .intro-ring { fill: none; stroke: var(--clr-gold); stroke-width: 1.4; opacity: 0; }
-.intro.is-burst .intro-ring { animation: introRing .85s ease-out forwards; }
+.intro.is-burst .intro-ring { animation: introRing 0.8s ease-out 2.5s forwards; }
 @keyframes introRing {
   0%   { opacity: .75; r: 3; }
   100% { opacity: 0;   r: 32; }
@@ -1228,10 +1233,10 @@ body.intro-active #map {
   transform: translateY(16px);
 }
 .intro.is-text .intro-kicker {
-  animation: introTextKicker .5s cubic-bezier(.22, .68, 0, 1.15) forwards;
+  animation: introTextKicker 0.8s cubic-bezier(.22, .68, 0, 1.15) 3.0s forwards;
 }
 .intro.is-text .intro-title {
-  animation: introText .62s .08s cubic-bezier(.22, .68, 0, 1.15) forwards;
+  animation: introText 0.8s .1s cubic-bezier(.22, .68, 0, 1.15) 3.0s forwards;
 }
 @keyframes introText      { to { opacity: 1;   transform: translateY(0); } }
 @keyframes introTextKicker { to { opacity: .85; transform: translateY(0); } }
@@ -1330,7 +1335,7 @@ body.intro-active #map {
   background: linear-gradient(90deg, var(--clr-gold), #f5efe3);
   border-radius: inherit;
   will-change: transform;
-  transition: transform .15s linear;
+  transition: transform 0.05s linear;
 }
 .intro-progress-icon {
   position: absolute;
