@@ -1113,7 +1113,9 @@ if (lbNext)  lbNext.addEventListener('click', () => lightboxNav(1));
     finishing = true;
     if (progressInterval) clearInterval(progressInterval);
     setProgress(100);
-    root.classList.add('is-closing');
+    // Простой fade out всего экрана через opacity
+    root.style.opacity = '0';
+    root.style.transition = 'opacity 0.8s ease';
     document.body.classList.add('intro-out');
     setTimeout(() => {
       root.classList.add('is-gone');

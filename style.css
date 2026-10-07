@@ -1160,12 +1160,20 @@ body.intro-active #map {
   justify-content: center;
   gap: 26px;
   padding: 24px;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 .intro-svg {
   width: min(64vw, 272px, calc(54vh * .79));
   height: auto;
-  overflow: visible;
+  overflow: visible !important;
   filter: drop-shadow(0 0 9px rgba(232, 184, 75, .35));
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  max-height: none !important;
+  transform: none !important;
+  clip-path: none !important;
 }
 
 /* linie „rysowane światłem” (pathLength=1 → dashoffset w ułomkach) */
@@ -1275,39 +1283,9 @@ body.intro-active #map {
 }
 
 /* zasuwki (curtain reveal) */
-.intro-shade {
-  position: absolute;
-  left: 0; right: 0;
-  height: 51%;
-  z-index: 5;
-  background: #0d1117;
-  transition: transform .68s cubic-bezier(.72, .02, .28, .99);
-  will-change: transform;
-}
-.intro-shade-top    { top: 0; }
-.intro-shade-bottom { bottom: 0; }
+/* УБРАНО: шторки перекрывали анимацию */
 /* cienki złoty „przeczes światła” przy krawędzi zasuwy w trakcie otwierania */
-.intro-shade-top::after,
-.intro-shade-bottom::before {
-  content: '';
-  position: absolute;
-  left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(232, 184, 75, .55) 30%,
-    rgba(245, 239, 227, .9) 50%,
-    rgba(232, 184, 75, .55) 70%,
-    transparent);
-  opacity: 0;
-  transition: opacity .55s ease;
-}
-.intro-shade-top::after { bottom: -1px; }
-.intro-shade-bottom::before { top: -1px; }
-.intro.is-closing .intro-shade::after,
-.intro.is-closing .intro-shade::before { opacity: 1; }
-.intro.is-closing .intro-shade-top    { transform: translateY(-103%) translateZ(0); }
-.intro.is-closing .intro-shade-bottom { transform: translateY(103%) translateZ(0); }
+/* УБРАНО: шторки перекрывали анимацию */
 
 .intro-progress {
   position: absolute;
