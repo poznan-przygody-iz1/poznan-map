@@ -195,9 +195,14 @@ body.sidebar-open .app-header { opacity: 0; transform: translateY(-8px); }
   font-size: 24px;
   line-height: 1;
   letter-spacing: .05em;
+  color: var(--clr-ink) !important;
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
 }
-.logo-poz { color: var(--clr-ink); }
-.logo-nan { color: var(--clr-amber); }
+/* Для темной темы */
+body.dark-theme .header-logo {
+  color: #ffffff !important;
+}
 .header-tagline {
   font-size: 9px;
   font-weight: 500;
@@ -1261,25 +1266,13 @@ body.intro-active #map {
   font-size: clamp(30px, 7.5vw, 46px);
   line-height: 1.1;
   letter-spacing: -.01em;
-  color: #f3ecdd;
+  color: #241a10 !important;
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
 }
-.intro-title em { position: relative; font-style: normal; color: var(--clr-gold); }
-.intro-star {
-  position: absolute;
-  top: -15px; left: 50%;
-  width: 15px; height: 15px;
-  transform: translateX(-50%);
-  filter: drop-shadow(0 0 6px rgba(232, 184, 75, .8));
-}
-.intro-star svg { width: 100%; height: 100%; display: block; }
-.intro-star svg path { fill: var(--clr-gold); }
-.intro.is-text .intro-star svg {
-  animation: introStarPop .55s .32s cubic-bezier(.34, 1.56, .64, 1) both;
-}
-@keyframes introStarPop {
-  0%   { opacity: 0; transform: scale(0) rotate(-120deg); }
-  65%  { opacity: 1; transform: scale(1.4) rotate(12deg); }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+/* Для темной темы */
+body.dark-theme .intro-title {
+  color: #ffffff !important;
 }
 
 /* zasuwki (curtain reveal) */
